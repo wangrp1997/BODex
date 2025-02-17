@@ -212,6 +212,3 @@ docs/*
 
 src/curobo/content/assets/object
 src/curobo/content/assets/output
-src/curobo/content/configs/world/GAPartNet/
-src/curobo/content/configs/manip/**/**_tmp/**
-example_grasp/dirty

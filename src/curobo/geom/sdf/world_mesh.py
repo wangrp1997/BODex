@@ -185,7 +185,7 @@ class WorldMeshCollision(WorldPrimitiveCollision):
                     self._contact_scene_convex_meshes.append(hppmesh)
                     self._contact_scene_mesh_num.append(i)
                     self._contact_scene_obb_param.append(obb_param)
-            self._contact_scene_obb_param = self.tensor_args.to_device(np.stack(self._contact_scene_obb_param))
+            self._contact_scene_obb_param = self.tensor_args.to_device(torch.stack(self._contact_scene_obb_param))
             self._contact_scene_mesh_num = self.tensor_args.to_device(np.stack(self._contact_scene_mesh_num)).long()
             self._contact_scene_poses = self._contact_mesh_poses[self._contact_scene_mesh_num]
 
