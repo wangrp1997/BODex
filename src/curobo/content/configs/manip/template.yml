@@ -1,0 +1,58 @@
+# world settings
+world:
+  candidate:
+    # If $template_cfg_path is not None, use the yml files in $template_cfg_path.
+    # Else load obj mesh from $template_obj_path
+    # If $additional_cfg_path is not None, add this yml to world  
+    template_cfg_path:    # Relative path to "content/configs/world/"
+    template_obj_path: "object/meshdata/{$OBJECT_CODE}/coacd/simply.obj" # Relative path to "content/configs/assets/"
+    additional_cfg_path: "collision_mesh_table.yml"  # Relative path to "content/configs/world/"
+    indicator: '{$OBJECT_CODE}'
+  selection:
+    # If $id is not None, use the objects identified by $id.
+    #   In this case, $start, $end, $shuffle will be useless.
+    # Else use the {$start}th to {$end}th objects/worlds
+    id:     
+    start: 0
+    end: 3  
+    repeat: 3   # repeat each world to enable random scale and pose.
+    shuffle: True 
+  mesh_info:
+    # new object scale and pose (including jitter)
+    scale: 0.1
+    scale_jitter: 0.05
+    pose: [0.0, 0.0, 0.2, 1, 0, 0, 0.0] 
+    pose_jitter: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+  
+# config pathes
+robot_file: "right_shadow_hand.yml" # relative path to "content/configs/robot/"
+base_cfg_file: "base_grasp.yml" # relative path to "content/configs/task/"
+particle_file: "particle_grasp_debug.yml" # relative path to "content/configs/task/"
+gradient_file: "gradient_grasp_fc.yml"  # relative path to "content/configs/task/"
+
+# hand initialization settings
+seed_num: 10    # the number of grasps for each object to optimize
+seeder_cfg:
+  obj_sample_num: 128         # if $default.t is None, sample points on object surface and use them to initialize hand root.
+  skip_transfer: False # if True, directly use t and r
+  load_path:    # load init pose from saved file. Example: sim_leap/dex1b.yml
+  t:        # translation
+  r:        # rotation
+  q: [ 0, 1.2, 0, -0.2, 0, 0.1, 0, 0.6, 0, 0, 0, 0.6, 0, -0.1, 0, 0.6, 0, 0, -0.2, 0, 0.6, 0] 
+  # $q is the initial joint angles.
+  #       Shadow hand order: TH, FF, MF, RF, LF
+  #       LEAP hand order: FF, MF, RF, TH
+  jitter_angle: [[-180, 0, 0], [180, 0, 0]]  # lower jitter angle along each axis, upper jitter angle 
+  jitter_dist: [[0.1, 0, 0], [0.2, 0, 0]] # lower jitter dist along each axis, upper jitter angle 
+
+# grasp cost settings
+grasp_cfg:
+    # control the distance between hand and object when convergence. 2: penetrate a little, 1: not penetrate, 0: may not touch
+  contact_points_name: ['ffdistal/2', 'mfdistal/2', 'lfdistal/2', 'rfdistal/2', 'thdistal/2'] # Format: link_id/sphere_id
+  contact_query_mode: -1    # no use now
+  task_dict:
+    f: [0, 1, 0]    # external force
+    p: [0, 0, 0]    # position for external force
+    t: [0, 0, 0]    # external torque
+    gamma: 180        # 15 or 45 for non-force-closure, 180 for force-closure
+  miu_coef: [0.3, 0]  # friction coeff
