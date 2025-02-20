@@ -43,7 +43,7 @@ We can also synthesize approaching trajectories with the motion planning of cuRo
 CUDA_VISIBLE_DEVICES=7 python example_grasp/plan_mogen_batch.py -c sim_shadow/tabletop.yml -t grasp_and_mogen
 
 # Multiple GPU version
-python example_grasp/multi_gpu.py -c sim_shadow/tabletop.yml -m grasp_and_mogen -g 0 1 2 3 
+python example_grasp/multi_gpu.py -c sim_shadow/tabletop.yml -t grasp_and_mogen -g 0 1 2 3 
 ```
 The grasp synthesis supports to parallize different objects, but the motion planning only supports to parallize different trajectories for the same object.
 
