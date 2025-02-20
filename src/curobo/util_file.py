@@ -260,7 +260,7 @@ def get_pathlist_from_template(template_path, id_lst_path=None, id=None, start=N
         obj_code_list = id
         full_path_list = [join_path(dir_path, p + added_path) for p in obj_code_list]
     elif id_lst_path is not None:
-        obj_code_list = load_json(id_lst_path)
+        obj_code_list = load_json(os.path.join(get_assets_path(),id_lst_path))
         if shuffle:
             obj_code_list = np.random.permutation(obj_code_list)
         full_path_list = [join_path(dir_path, p + added_path) for p in obj_code_list]

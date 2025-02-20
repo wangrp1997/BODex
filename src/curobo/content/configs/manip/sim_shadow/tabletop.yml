@@ -1,19 +1,19 @@
 world:
   indicator: '{$OBJECT_CODE}'
-  template_path: "object/DGNObj/{$OBJECT_CODE}/mesh/simplified.obj"
+  template_path: "object/DGN_obj/processed_data/{$OBJECT_CODE}/mesh/simplified.obj"
   additional_cfg_path: "collision_table.yml"
   selection:
-    id_lst_path: /mnt/disk1/jiayichen/data/dex_obj/old_meshdata_splits/new_table_density_1000_obb_0_2.json
+    id_lst_path: object/DGN_obj/valid_split/bodex_all.json
     id:    
     start: 0
     end: 10
     repeat: 8
     shuffle: True 
-  base_info_path: object/DGNObj/{$OBJECT_CODE}/info/simplified.json
-  urdf_path: object/DGNObj/{$OBJECT_CODE}/urdf/coacd.urdf
+  base_info_path: object/DGN_obj/processed_data/{$OBJECT_CODE}/info/simplified.json
+  urdf_path: object/DGN_obj/processed_data/{$OBJECT_CODE}/urdf/coacd.urdf
   fixed_scale_lst: [0.06, 0.08, 0.10, 0.12]
-  pose_path: object/DGNObj/{$OBJECT_CODE}/info/tabletop_pose.json
-  # scale_path: object/DGNObj/{$OBJECT_CODE}/info/tabletop_scale.json
+  pose_path: object/DGN_obj/processed_data/{$OBJECT_CODE}/info/tabletop_pose.json
+  # scale_path: object/DGN_obj/processed_data/{$OBJECT_CODE}/info/tabletop_scale.json
 
 
 robot_file: "right_shadow_hand_sim.yml"
@@ -67,10 +67,3 @@ grasp_cfg:
     solve_interval: 5
 
 mogen_init: [0.4227, -1.5991, -1.8872, -3.0432, -0.9848,  3.2433,  0.1738, -0.2078, 0,0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,0]
-eval_contact_group: [
-  ["rh_ffproximal", "rh_ffmiddle", "rh_ffdistal"],
-  ["rh_mfproximal", "rh_mfmiddle", "rh_mfdistal"],
-  ["rh_rfproximal", "rh_rfmiddle", "rh_rfdistal"],
-  ["rh_lfmetacarpal", "rh_lfproximal", "rh_lfmiddle", "rh_lfdistal"],
-  ["rh_thproximal", "rh_thmiddle", "rh_thdistal"],  
-]

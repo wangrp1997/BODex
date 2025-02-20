@@ -60,12 +60,12 @@ if __name__ == "__main__":
     
     manip_config_data = load_yaml(join_path(get_manip_configs_path(), args.manip_cfg_file))
     
-    save_folder = os.path.join("output", args.manip_cfg_file[:-4], args.path)
+    save_folder = os.path.join(args.manip_cfg_file[:-4], args.path)
     
     if args.mode == 'grasp':
-        manip_config_data['world']['template_path'] = os.path.join(save_folder, manip_config_data['world']['indicator'] + 'grasp.npy')
+        manip_config_data['world']['template_path'] = os.path.join("output", save_folder, manip_config_data['world']['indicator'] + 'grasp.npy')
     elif args.mode == 'mogen':
-        manip_config_data['world']['template_path'] = os.path.join(save_folder, manip_config_data['world']['indicator'] + 'mogen.npy')
+        manip_config_data['world']['template_path'] = os.path.join("output", save_folder, manip_config_data['world']['indicator'] + 'mogen.npy')
     else:
         raise NotImplementedError
     

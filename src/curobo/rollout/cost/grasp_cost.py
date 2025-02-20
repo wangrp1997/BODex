@@ -1,14 +1,3 @@
-#
-# Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-#
-# NVIDIA CORPORATION, its affiliates and licensors retain all intellectual
-# property and proprietary rights in and to this material, related
-# documentation and any modifications thereto. Any use, reproduction,
-# disclosure or distribution of this material and related documentation
-# without an express license agreement from NVIDIA CORPORATION or
-# its affiliates is strictly prohibited.
-#
-
 # Standard Library
 from dataclasses import dataclass
 from typing import Optional, Union, List, Dict
@@ -164,27 +153,6 @@ class GraspCost(CostBase, GraspCostConfig):
             self.contact_query_mode = contact_query_mode
             self.update_perturb_info()
         return contact_distance, switch_stage_flag, ge_stage_flag, save_qpos_flag
-    
-    @torch.no_grad()
-    def evaluate_contacts(self, pos, normal, test_wrench=None):
-        if test_wrench is not None:
-            test_wrench = self.tensor_args.to_device(test_wrench).view(-1,6,1)
-        _, grasp_error, contact_frame, contact_force = self.GraspEnergy.forward(pos, normal, test_wrench)
-        return grasp_error, contact_frame, contact_force
-
-    @torch.no_grad()
-    def evaluate_mesh_distance(self, link_pos_quat, env_query_idx):
-        '''
-        Use mesh-to-mesh nearest point query (gjk algorithm) for evaluating distance error.
-        mesh_dist > 0 means outside the object (non-penetration)
-        mesh_dist < 0 means inside the object (penetration)
-        '''
-        self._get_contact_stage(0.0)
-        contact_robot_pose = link_pos_quat[..., self.contact_mesh_idx, :].unsqueeze(1)
-        dist_upper_bound = self.tensor_args.to_device(torch.ones_like(contact_robot_pose[...,-1]).float() * 50)
-        _, mesh_dist, _, _, _ = self.world_coll_checker.get_mesh_contact_pdn(
-            contact_robot_pose.detach(), self.perturb_template, env_query_idx, dist_upper_bound)
-        return mesh_dist
     
     @torch.no_grad()
     def evaluate(self, link_pos_quat, env_query_idx):

@@ -1,19 +1,19 @@
 world:
   indicator: '{$OBJECT_CODE}'
-  template_path: "object/DGNObj/{$OBJECT_CODE}/mesh/simplified.obj"
+  template_path: "object/DGN_obj/processed_data/{$OBJECT_CODE}/mesh/simplified.obj"
   additional_cfg_path: 
   selection:
-    id_lst_path: /mnt/disk1/jiayichen/data/dex_obj/old_meshdata_splits/new_table_density_1000_obb_0_2.json
+    id_lst_path: object/DGN_obj/valid_split/bodex_all.json
     id:    
     start: 0
     end: 100
     repeat: 4
-    shuffle: False 
-  base_info_path: object/DGNObj/{$OBJECT_CODE}/info/simplified.json
-  urdf_path: object/DGNObj/{$OBJECT_CODE}/urdf/coacd.urdf
+    shuffle: True 
+  base_info_path: object/DGN_obj/processed_data/{$OBJECT_CODE}/info/simplified.json
+  urdf_path: object/DGN_obj/processed_data/{$OBJECT_CODE}/urdf/coacd.urdf
   fixed_scale_lst: [0.06, 0.08, 0.10, 0.12]
   fixed_pose_lst: [[0.0, 0.0, 0.0, 1, 0, 0, 0.0]]
-  # pose_path: object/DGNObj/{$OBJECT_CODE}/info/tabletop_pose.json
+  # pose_path: object/DGN_obj/{$OBJECT_CODE}/info/tabletop_pose.json
 
 
 robot_file: "allegro.yml"
@@ -66,10 +66,4 @@ grasp_cfg:
     enable_density: False
     solve_interval: 5
 
-mogen_init: [3.5643, -1.5991, -1.8872, -3.0432, -0.9848,  3.2433,  0.1738, -0.2078, 0,0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,0]
-eval_contact_group: [
-  ['link_0.0', 'link_1.0', 'link_2.0', 'link_3.0', 'link_3.0_tip'],
-  ['link_4.0', 'link_5.0', 'link_6.0', 'link_7.0', 'link_7.0_tip'],
-  ['link_8.0', 'link_9.0', 'link_10.0', 'link_11.0', 'link_11.0_tip'],
-  ['link_12.0', 'link_13.0', 'link_14.0', 'link_15.0', 'link_15.0_tip']  
-]
+mogen_init: [0.4227, -1.5991, -1.8872, -3.0432, -0.9848,  3.2433,  0.1738, -0.2078, 0,0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,0]

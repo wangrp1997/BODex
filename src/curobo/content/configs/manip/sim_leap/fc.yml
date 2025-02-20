@@ -1,22 +1,18 @@
 world:
   indicator: '{$OBJECT_CODE}'
-  candidate:
-    template_npy_path: 
-    template_cfg_path: 
-    template_obj_path: "object/meshdata/{$OBJECT_CODE}/coacd/simply.obj"
-    additional_cfg_path: "collision_table.yml"
+  template_path: "object/DGN_obj/processed_data/{$OBJECT_CODE}/mesh/simplified.obj"
+  additional_cfg_path: 
   selection:
-    id_lst_path: object/meshdata_splits/table_density_1000_obb_0_2.json
-    id:  
+    id_lst_path: object/DGN_obj/valid_split/bodex_all.json
+    id:    
     start: 0
-    end: 1
-    repeat: 1
+    end: 100
+    repeat: 4
     shuffle: True 
-  mesh_info:
-    fixed_scale_lst: [0.08]
-    sim_pose_path: object/meshdata/{$OBJECT_CODE}/tabletop_pose.json
-    base_info_path: object/meshdata/{$OBJECT_CODE}/info_scale010.json
-  
+  base_info_path: object/DGN_obj/processed_data/{$OBJECT_CODE}/info/simplified.json
+  urdf_path: object/DGN_obj/processed_data/{$OBJECT_CODE}/urdf/coacd.urdf
+  fixed_scale_lst: [0.06, 0.08, 0.10, 0.12]
+  fixed_pose_lst: [[0.0, 0.0, 0.0, 1, 0, 0, 0.0]]
 
 robot_file: "leap.yml"
 robot_file_with_arm:
@@ -24,11 +20,14 @@ base_cfg_file: "base_grasp.yml"
 particle_file: "particle_grasp_debug.yml"
 gradient_file: "gradient_grasp_fc.yml"
 
-exp_name: dedebug
-seed_num: 100
+exp_name: debug
+seed_num: 20
 seeder_cfg:
-  obj_inflate: 0.2
-  obj_sample_num: 128
+  obj_sample:
+    num: 128
+    inflate: 0.1
+    convex_hull: True
+    collision_free: True 
   ik_init_q:
   load_path: 
   skip_transfer: False
@@ -43,6 +42,7 @@ grasp_contact_strategy:
   opt_progress: [0.0, 0.6, 0.8]
   distance: [0.01, 0.01, 0.0]
   contact_query_mode: [-1, 0, 0]
+  save_qpos: [False, True]
   max_ge_stage: 0
 
 grasp_cfg:
@@ -64,4 +64,4 @@ grasp_cfg:
     enable_density: False
     solve_interval: 5
 
-mogen_init: [3.5643, -1.5991, -1.8872, -3.0432, -0.9848,  3.2433,  0.1738, -0.2078, 0,0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,0]
+mogen_init: [0.4227, -1.5991, -1.8872, -3.0432, -0.9848,  3.2433,  0.1738, -0.2078, 0,0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,0]

@@ -115,7 +115,7 @@ if __name__ == "__main__":
         "-m",
         "--save_mode",
         choices=['usd', 'npy', 'usd+npy', 'none'],
-        default='usd+npy',
+        default='npy',
         help="Method to save results",
     )
     
