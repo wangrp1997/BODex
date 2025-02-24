@@ -4,6 +4,15 @@ A GPU-based efficient pipeline for dexterous grasp synthesis built on [cuRobo](h
 
 [Project page](https://pku-epic.github.io/BODex/) ｜ [Paper](https://arxiv.org/abs/2412.16490)
 
+## Introduction
+### Main Features
+- **Grasp Synthesis**: Generate force-closure grasps for floating dexterous hands, such as the Shadow, Allegro, and Leap Hand.
+- **Trajectory Planning**: Plan approaching trajectories for hands mounted on robotic arms, e.g., UR10e + Shadow Hand systems.
+
+### Highlights
+- **Efficient**: Capable of synthesizing millions of grasps per day using a single NVIDIA 3090 GPU.
+- **Generalizable**: Supports different hands and a wide range of objects, e.g., those from [ShapeNet](https://shapenet.org/).
+
 ## Getting Started
 1. Before `git clone` this repository, please make sure that the git lfs has been installed with `sudo apt install git-lfs`.
 
