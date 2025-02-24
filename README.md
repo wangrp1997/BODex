@@ -14,9 +14,9 @@ A GPU-based efficient pipeline for dexterous grasp synthesis built on [cuRobo](h
 - **Generalizable**: Supports different hands and a wide range of objects, e.g., those from [ShapeNet](https://shapenet.org/).
 
 ## Getting Started
-1. Before `git clone` this repository, please make sure that the git lfs has been installed with `sudo apt install git-lfs`.
+1. **Install git lfs**: Before `git clone` this repository, please make sure that the git lfs has been installed by `sudo apt install git-lfs`.
 
-2. Installation.
+2. **Install the Python environment**:
 ```
 conda create -n bodex python=3.10
 conda activate bodex
@@ -35,12 +35,12 @@ cd src/curobo/geom/cpp
 python setup.py install    # install hppfcl_openmp_wrapper
 ```
 
-2. Object preparing. Clone [MeshProcess](https://github.com/JYChen18/MeshProcess) and download the object assets according to the [guides](https://github.com/JYChen18/MeshProcess/tree/main/src/dataset#dexgraspnet). Create a soft link for the data folders.
+3. **Prepare object assets**: Clone [MeshProcess](https://github.com/JYChen18/MeshProcess) and download the object assets according to the [guides](https://github.com/JYChen18/MeshProcess/tree/main/src/dataset#dexgraspnet). Create a soft link for the data folders.
 ```
 ln -s ${YOUR_PATH}/MeshProcess/assets/object src/curobo/content/assets/object  
 ```
    
-3. Synthesize grasp poses. Each data point includes a pre-grasp, a grasp, and a squeeze pose. 
+4. **Synthesize grasp poses**: Each synthesized grasping data point includes a pre-grasp, a grasp, and a squeeze pose. 
 ```
 # Single GPU version
 CUDA_VISIBLE_DEVICES=7 python example_grasp/plan_batch_env.py -c sim_shadow/fc.yml -w 40 
@@ -48,7 +48,7 @@ CUDA_VISIBLE_DEVICES=7 python example_grasp/plan_batch_env.py -c sim_shadow/fc.y
 # Multiple GPU version
 python example_grasp/multi_gpu.py -c sim_shadow/fc.yml -t grasp -g 0 1 2 3 
 ```
-We can also synthesize approaching trajectories with the motion planning of cuRobo.
+We can also **synthesize approaching trajectories** for hands mounted on arms, e.g., UR10e+Shadow Hand systems.
  ```
 # Single GPU version
 CUDA_VISIBLE_DEVICES=7 python example_grasp/plan_mogen_batch.py -c sim_shadow/tabletop.yml -t grasp_and_mogen
@@ -56,13 +56,14 @@ CUDA_VISIBLE_DEVICES=7 python example_grasp/plan_mogen_batch.py -c sim_shadow/ta
 # Multiple GPU version
 python example_grasp/multi_gpu.py -c sim_shadow/tabletop.yml -t grasp_and_mogen -g 0 1 2 3 
 ```
-The grasp synthesis supports to parallize different objects, but the motion planning only supports to parallize different trajectories for the same object.
+On a single GPU, the grasp synthesis supports parallizing different objects, but the motion planning only supports parallizing different trajectories for the same object.
 
-4. (Optional) Visualization.
+5. **(Optional) Visualize synthesized poses**:
 ```
 python example_grasp/visualize_npy.py -c sim_shadow/fc.yml -p debug -m grasp
 ```
-5. To evaluate grasps and filter out bad ones, please see [DexGraspBench](https://github.com/JYChen18/DexGraspBench).
+
+6. **Evaluate grasp poses and filter out bad ones**: please see [DexGraspBench](https://github.com/JYChen18/DexGraspBench).
 
 ## Project using BODex
 Some projects make modifications based on our pipeline to quickly synthesize large-scale datasets of grasping poses, such as 
