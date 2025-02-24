@@ -5,7 +5,9 @@ A GPU-based efficient pipeline for dexterous grasp synthesis built on [cuRobo](h
 [Project page](https://pku-epic.github.io/BODex/) ｜ [Paper](https://arxiv.org/abs/2412.16490)
 
 ## Getting Started
-1. Installation.
+1. Before `git clone` this repository, please make sure that the git lfs has been installed with `sudo apt install git-lfs`.
+
+2. Installation.
 ```
 conda create -n bodex python=3.10
 conda activate bodex
