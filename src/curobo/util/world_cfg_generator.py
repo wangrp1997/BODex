@@ -28,6 +28,7 @@ class WorldConfigDataset(Dataset):
             indicator=self.indicator,
             **selection,
         )
+        self.repeat_num = selection['repeat']
 
         if len(self.full_path_list) == 0:
             raise NotImplementedError(f"Cannot find any file with {template_path}")
@@ -78,7 +79,6 @@ class OBJBasedConfigDataset(WorldConfigDataset):
         base_info_path=None,
         urdf_path=None,
         pose_path=None,
-        scale_path=None,
         fixed_pose_lst=None,
         fixed_scale_lst=None,
     ):
@@ -86,38 +86,30 @@ class OBJBasedConfigDataset(WorldConfigDataset):
         self.base_info_path = base_info_path
         self.urdf_path = urdf_path
         self.pose_path = pose_path
-        self.scale_path = scale_path
         self.fixed_pose_lst = fixed_pose_lst
         self.fixed_scale_lst = fixed_scale_lst
-
+        if self.fixed_scale_lst is None:
+            raise NotImplementedError("Only support fixed scale lst")
         return
 
     def __getitem__(self, index):
         full_path, id = super().__getitem__(index)
-
+        repeat_id = index % self.repeat_num 
+        each_scale_num = self.repeat_num // len(self.fixed_scale_lst) + 1 - (self.repeat_num % len(self.fixed_scale_lst)==0)
+        scale_id = repeat_id // each_scale_num
+        pose_id = repeat_id % each_scale_num 
+        obj_scale = self.fixed_scale_lst[scale_id]
+        
         if self.fixed_pose_lst is not None:
-            pose_num = index % len(self.fixed_pose_lst)
+            pose_num = pose_id % len(self.fixed_pose_lst)
             obj_pose = self.fixed_pose_lst[pose_num]
         else:
             pose_path = join_path(
                 get_assets_path(), self._replace_indicator(self.pose_path, id)
             )
             obj_pose_lst = load_json(pose_path)
-            pose_num = np.random.randint(0, len(obj_pose_lst))
+            pose_num = pose_id % len(obj_pose_lst)
             obj_pose = obj_pose_lst[pose_num]
-
-        if self.fixed_scale_lst is not None:
-            obj_scale = self.fixed_scale_lst[index % len(self.fixed_scale_lst)]
-        else:
-            if self.fixed_pose_lst is not None:
-                raise NotImplementedError("scale_path is only used when pose_path is available")
-            scale_path = join_path(
-                get_assets_path(), self._replace_indicator(self.scale_path, id)
-            )
-            obj_scale_limit = load_json(scale_path)[pose_num]
-            obj_scale = (
-                random.random() * (obj_scale_limit[-1] - obj_scale_limit[0]) + obj_scale_limit[0]
-            )
 
         if self.fixed_pose_lst is None:
             obj_pose[2] *= obj_scale
@@ -125,7 +117,7 @@ class OBJBasedConfigDataset(WorldConfigDataset):
             obj_pose[1] = 0.
 
         obj_scale = np.around(obj_scale, 2)
-        pose_name = str(pose_num).zfill(3)
+        pose_name = str(pose_id).zfill(3)
         scale_name = str(int(obj_scale * 100)).zfill(3)
         manip_name = f"{id}_scale{scale_name}"  # This is for warp
 

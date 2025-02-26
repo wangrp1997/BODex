@@ -14,7 +14,6 @@ world:
   fixed_scale_lst: [0.06, 0.08, 0.10, 0.12]
   fixed_pose_lst: [[0.0, 0.0, 0.0, 1, 0, 0, 0.0]]
   # pose_path: object/DGN_obj/processed_data/{$OBJECT_CODE}/info/tabletop_pose.json
-  # scale_path: object/DGN_obj/processed_data/{$OBJECT_CODE}/info/tabletop_scale.json
 
 
 
