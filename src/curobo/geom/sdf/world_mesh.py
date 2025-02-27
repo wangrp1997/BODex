@@ -21,8 +21,8 @@ import warp as wp
 import trimesh 
 
 # CuRobo
-from hppfcl_openmp_wrapper import loadConvexMeshCpp
-from curobo.geom.sdf.convex_hppfcl import getBoundingPrimitive, ContactPDNConvexMesh, RobotSelfPenetration
+from coal_openmp_wrapper import loadConvexMeshCpp
+from curobo.geom.sdf.gjk_coal import getBoundingPrimitive, ContactPDNConvexMesh, RobotSelfPenetration
 from curobo.cuda_robot_model.urdf_kinematics_parser import UrdfKinematicsParser
 from curobo.geom.sdf.warp_primitives import SdfMeshWarpPy, SweptSdfMeshWarpPy, ContactPDNMeshWarpPy
 from curobo.geom.sdf.world import (

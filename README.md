@@ -25,14 +25,15 @@ conda install pytorch==2.2.2 pytorch-cuda=12.1 -c pytorch -c nvidia
 
 pip install -e . --no-build-isolation  
 
-pip uninstall numpy
-pip install numpy==1.26.4
 pip install usd-core 
 conda install pytorch-scatter -c pyg
-conda install pinocchio -c conda-forge
+conda install coal -c conda-forge   # https://github.com/coal-library/coal
+
+pip uninstall numpy
+pip install numpy==1.26.4
 
 cd src/curobo/geom/cpp
-python setup.py install    # install hppfcl_openmp_wrapper
+python setup.py install    # install coal_openmp_wrapper
 ```
 
 3. **Prepare object assets**: Clone [MeshProcess](https://github.com/JYChen18/MeshProcess) and download the object assets according to the [guides](https://github.com/JYChen18/MeshProcess/tree/main/src/dataset#dexgraspnet). Create a soft link for the data folders.
@@ -44,6 +45,9 @@ ln -s ${YOUR_PATH}/MeshProcess/assets/object src/curobo/content/assets/object
 ```
 # Single GPU version
 CUDA_VISIBLE_DEVICES=7 python example_grasp/plan_batch_env.py -c sim_shadow/fc.yml -w 40 
+
+# Debugging. The saved USD file has the whole optimization process, while the intermediate gradient on each contact point is denoted by the purple line.
+CUDA_VISIBLE_DEVICES=7 python example_grasp/plan_batch_env.py -c sim_shadow/fc.yml -w 1 -m usd -debug -d all -i 0 1
 
 # Multiple GPU version
 python example_grasp/multi_gpu.py -c sim_shadow/fc.yml -t grasp -g 0 1 2 3 

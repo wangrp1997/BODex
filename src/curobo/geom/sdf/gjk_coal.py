@@ -7,7 +7,7 @@ import trimesh
 import torch_scatter
 import time 
 
-from hppfcl_openmp_wrapper import batched_hppfcl_distance
+from coal_openmp_wrapper import batched_coal_distance
 from curobo.geom.transform import pose_multiply
 from curobo.geom.basic_transform import torch_quaternion_to_matrix
 from curobo.util.tensor_util import normalize_vector
@@ -72,7 +72,7 @@ def narrow_phase(obj_mesh_list, robot_mesh_list, obj_idx, robot_idx, obj_rot, ob
     narrow_lst = narrow_idx.cpu().numpy()
     
     # st = time.time()
-    batched_hppfcl_distance(
+    batched_coal_distance(
         obj_mesh_list, obj_idx_cpu, obj_rot_cpu, obj_trans_cpu,
         robot_mesh_list, robot_idx_cpu, robot_rot_cpu, robot_trans_cpu,
         narrow_lst, len(narrow_lst), dist_result, normal_result, cp1_result, cp2_result)
