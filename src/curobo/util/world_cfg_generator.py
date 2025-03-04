@@ -28,7 +28,6 @@ class WorldConfigDataset(Dataset):
             indicator=self.indicator,
             **selection,
         )
-        self.repeat_num = selection['repeat']
 
         if len(self.full_path_list) == 0:
             raise NotImplementedError(f"Cannot find any file with {template_path}")
@@ -83,6 +82,7 @@ class OBJBasedConfigDataset(WorldConfigDataset):
         fixed_scale_lst=None,
     ):
         super().__init__(template_path, indicator, selection, additional_cfg_path)
+        self.repeat_num = selection['repeat']
         self.base_info_path = base_info_path
         self.urdf_path = urdf_path
         self.pose_path = pose_path
