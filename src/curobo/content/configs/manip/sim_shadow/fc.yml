@@ -1,20 +1,8 @@
 world:
-  indicator: '{$OBJECT_CODE}'
-  template_path: "object/DGN_obj/processed_data/{$OBJECT_CODE}/mesh/simplified.obj"
-  additional_cfg_path: 
-  selection:
-    id_lst_path: object/DGN_obj/valid_split/bodex_all.json
-    id:    
-    start: 0
-    end: 100
-    repeat: 4
-    shuffle: True 
-  base_info_path: object/DGN_obj/processed_data/{$OBJECT_CODE}/info/simplified.json
-  urdf_path: object/DGN_obj/processed_data/{$OBJECT_CODE}/urdf/coacd.urdf
-  fixed_scale_lst: [0.06, 0.08, 0.10, 0.12]
-  fixed_pose_lst: [[0.0, 0.0, 0.0, 1, 0, 0, 0.0]]
-  # pose_path: object/DGN_obj/processed_data/{$OBJECT_CODE}/info/tabletop_pose.json
-
+  type: scene_cfg
+  template_path: object/DGN_2k/scene_cfg/**/floating/**.npy
+  start: 
+  end: 
 
 
 robot_file: "right_shadow_hand_sim.yml"

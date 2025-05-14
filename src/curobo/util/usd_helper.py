@@ -45,6 +45,7 @@ from curobo.util_file import (
     load_yaml,
 )
 from curobo.util.tensor_util import normalize_vector
+
 # from curobo.wrap.reacher.motion_gen import MotionGenResult
 
 try:
@@ -168,7 +169,7 @@ def set_geom_mesh_attrs(mesh_geom: UsdGeom.Mesh, obs: Mesh, timestep=None):
     # low = np.min(verts, axis=0)
     # high = np.max(verts, axis=0)
     # mesh_geom.CreateExtentAttr([low, high])
-    pose = obs.pose
+    pose = obs.pose if isinstance(obs.pose, list) else list(obs.pose)
     position = Gf.Vec3d(pose[:3])
     quat = pose[3:]
     q = Gf.Quatf(quat[0], quat[1:])
@@ -188,7 +189,6 @@ def set_geom_mesh_attrs(mesh_geom: UsdGeom.Mesh, obs: Mesh, timestep=None):
         a = UsdGeom.Xformable(mesh_geom)  #
         a.AddTranslateOp().Set(position)
         a.AddOrientOp().Set(q)
-
 
 
 def set_geom_cube_attrs(
@@ -431,23 +431,55 @@ class UsdHelper:
         self.interpolation_steps = interpolation_steps
         if timesteps is not None:
             self.stage.SetStartTimeCode(0)
-            self.stage.SetEndTimeCode((timesteps-1) * self.interpolation_steps)
+            self.stage.SetEndTimeCode((timesteps - 1) * self.interpolation_steps)
             self.stage.SetTimeCodesPerSecond((24))
-        
+
         if camera_lookat is not None:
             camera_t1 = np.array(camera_lookat) + np.array([1.0, 1.0, 1.2])
-            camera_t2 = np.array(camera_lookat) + np.array([1.0, 1.8485281374238569, 0.8485281374238569])
-            camera_t3 = np.array(camera_lookat) + np.array([1.0, 0.1514718625761431, 0.8485281374238569])
-            self.add_camera('0', camera_t1.tolist(), [1.,0.,0.,0.,1.,0.,0.,0.,1.])
-            self.add_camera('1', camera_t2.tolist(), [1.,0.,0.,0.,0.7071067811865475,-0.7071067811865475,0.,0.7071067811865475,0.7071067811865475])
-            self.add_camera('2', camera_t3.tolist(), [1.,0.,0.,0.,0.7071067811865475,0.7071067811865475,0.,-0.7071067811865475,0.7071067811865475])
-            
+            camera_t2 = np.array(camera_lookat) + np.array(
+                [1.0, 1.8485281374238569, 0.8485281374238569]
+            )
+            camera_t3 = np.array(camera_lookat) + np.array(
+                [1.0, 0.1514718625761431, 0.8485281374238569]
+            )
+            self.add_camera("0", camera_t1.tolist(), [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0])
+            self.add_camera(
+                "1",
+                camera_t2.tolist(),
+                [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.7071067811865475,
+                    -0.7071067811865475,
+                    0.0,
+                    0.7071067811865475,
+                    0.7071067811865475,
+                ],
+            )
+            self.add_camera(
+                "2",
+                camera_t3.tolist(),
+                [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.7071067811865475,
+                    0.7071067811865475,
+                    0.0,
+                    -0.7071067811865475,
+                    0.7071067811865475,
+                ],
+            )
+
     def add_camera(self, id, cam_t, cam_r):
         camera_path = f"/Camera_{id}"
         camera_prim = self.stage.DefinePrim(camera_path, f"Camera")
         camera = UsdGeom.Camera(self.stage.GetPrimAtPath(camera_path))
         # Define your transformation matrix
-        transform = Gf.Matrix4d(1.0)  
+        transform = Gf.Matrix4d(1.0)
         transform.SetTransform(Gf.Matrix3d(*cam_r), Gf.Vec3d(*cam_t))
         # Apply the transformation to the camera
         camera.AddTransformOp().Set(transform)
@@ -538,25 +570,32 @@ class UsdHelper:
         # base_t_obstacle_pose: Optional[Pose] = Pose.from_list([1., 1., 0., 1., 0, 0, 0]),
         base_t_obstacle_pose: Optional[Pose] = None,
         timestep: Optional[float] = None,
-        visible_time: Optional[List[float]] = None
+        visible_time: Optional[List[float]] = None,
     ):
         # iterate through every obstacle type and create prims:
 
         self.add_subroot(base_frame, obstacles_frame, base_t_obstacle_pose)
         full_path = join_path(base_frame, obstacles_frame)
         prim_path = [
-            self.get_prim_from_obstacle(o, full_path, timestep=timestep,visible_time=visible_time) for o in obstacles.objects
+            self.get_prim_from_obstacle(o, full_path, timestep=timestep, visible_time=visible_time)
+            for o in obstacles.objects
         ]
         return prim_path
 
     def get_prim_from_obstacle(
-        self, obstacle: Obstacle, base_frame: str = "/world/obstacles", timestep=None, visible_time=None
+        self,
+        obstacle: Obstacle,
+        base_frame: str = "/world/obstacles",
+        timestep=None,
+        visible_time=None,
     ):
 
         if isinstance(obstacle, Cuboid):
             return self.add_cuboid_to_stage(obstacle, base_frame, timestep=timestep)
         elif isinstance(obstacle, Mesh):
-            return self.add_mesh_to_stage(obstacle, base_frame, timestep=timestep, visible_time=visible_time)
+            return self.add_mesh_to_stage(
+                obstacle, base_frame, timestep=timestep, visible_time=visible_time
+            )
         elif isinstance(obstacle, Sphere):
             return self.add_sphere_to_stage(obstacle, base_frame, timestep=timestep)
         elif isinstance(obstacle, Cylinder):
@@ -637,9 +676,9 @@ class UsdHelper:
         base_frame: str = "/world/obstacles",
         timestep=None,
         enable_physics: bool = False,
-        visible_time=None
+        visible_time=None,
     ):
-        root_path = join_path(base_frame, 'o' + obstacle.name)
+        root_path = join_path(base_frame, "o" + obstacle.name)
         obj_geom = UsdGeom.Mesh.Define(self.stage, root_path)
         obj_prim = self.stage.GetPrimAtPath(root_path)
         # obstacle.update_material() # This does not get the correct materials
@@ -648,10 +687,10 @@ class UsdHelper:
         obj_prim.CreateAttribute("physics:rigidBodyEnabled", Sdf.ValueTypeNames.Bool, custom=False)
         obj_prim.GetAttribute("physics:rigidBodyEnabled").Set(enable_physics)
         if visible_time is not None:
-            obj_geom.GetVisibilityAttr().Set('invisible', Usd.TimeCode(0))
-            obj_geom.GetVisibilityAttr().Set('inherited', Usd.TimeCode(visible_time[0]))
-            obj_geom.GetVisibilityAttr().Set('invisible', Usd.TimeCode(visible_time[1]))
-        
+            obj_geom.GetVisibilityAttr().Set("invisible", Usd.TimeCode(0))
+            obj_geom.GetVisibilityAttr().Set("inherited", Usd.TimeCode(visible_time[0]))
+            obj_geom.GetVisibilityAttr().Set("invisible", Usd.TimeCode(visible_time[1]))
+
         if obstacle.color is not None:
             self.add_material(
                 "material_" + obstacle.name, root_path, obstacle.color, obj_prim, obstacle.material
@@ -687,7 +726,11 @@ class UsdHelper:
             dt: _description_. Defaults to 0.02.
         """
         prim_names = self.add_world_to_stage(
-            robot_world_cfg, base_frame=base_frame, base_t_obstacle_pose=base_t_obstacle_pose, obstacles_frame=robot_frame, timestep=0
+            robot_world_cfg,
+            base_frame=base_frame,
+            base_t_obstacle_pose=base_t_obstacle_pose,
+            obstacles_frame=robot_frame,
+            timestep=0,
         )
         for i, i_val in enumerate(prim_names):
             curr_prim = self.stage.GetPrimAtPath(i_val)
@@ -830,7 +873,7 @@ class UsdHelper:
         visualize_robot_spheres: bool = True,
         robot_color: Optional[List[float]] = None,
         flatten_usd: bool = False,
-        debug_info: Dict = None, 
+        debug_info: Dict = None,
         goal_pose: Optional[Pose] = None,
         goal_color: Optional[List[float]] = None,
         set_camera: bool = False,
@@ -874,21 +917,21 @@ class UsdHelper:
             for object in world_model[0]:
                 if isinstance(object, Mesh):
                     camera_lookat = object.pose[:3]
-                    camera_lookat[-1] = 0.
+                    camera_lookat[-1] = 0.0
                     break
-                
+
             # only for visualization! Maybe buggy in other cases.
             for object in world_model[0]:
                 if isinstance(object, Cuboid):
-                    object.dims[:3] = [0.3, 0.3, 0.02] 
-                    object.pose[:3] = camera_lookat 
-                    object.pose[2] -= 0.01 
+                    object.dims[:3] = [0.3, 0.3, 0.02]
+                    object.pose[:3] = camera_lookat
+                    object.pose[2] -= 0.01
                     break
-            base_t_obstacle_pose = Pose.from_list([1., 1., 0., 1., 0, 0, 0])
+            base_t_obstacle_pose = Pose.from_list([1.0, 1.0, 0.0, 1.0, 0, 0, 0])
         else:
-            camera_lookat = None 
+            camera_lookat = None
             base_t_obstacle_pose = None
-            
+
         usd_helper.create_stage(
             save_path,
             timesteps=q_traj.position.shape[0],
@@ -903,11 +946,11 @@ class UsdHelper:
             each = q_traj.position.shape[0] / len(world_model)
             for env_id, world in enumerate(world_model):
                 usd_helper.add_world_to_stage(
-                    world, 
-                    base_frame=base_frame, 
+                    world,
+                    base_frame=base_frame,
                     base_t_obstacle_pose=base_t_obstacle_pose,
-                    obstacles_frame='obs_' + str(env_id),
-                    visible_time=[each*env_id,each*(env_id+1)]
+                    obstacles_frame="obs_" + str(env_id),
+                    visible_time=[each * env_id, each * (env_id + 1)],
                 )
 
         animation_links = kin_model.kinematics_config.mesh_link_names
@@ -924,7 +967,11 @@ class UsdHelper:
         robot_base_frame = join_path(base_frame, robot_base_frame)
 
         usd_helper.create_animation(
-            robot_mesh_model, animation_poses, base_frame, base_t_obstacle_pose, robot_frame=robot_base_frame
+            robot_mesh_model,
+            animation_poses,
+            base_frame,
+            base_t_obstacle_pose,
+            robot_frame=robot_base_frame,
         )
         if visualize_robot_spheres:
             # visualize robot spheres:
@@ -934,40 +981,62 @@ class UsdHelper:
                 for k in s:
                     k.color = [0, 0.27, 0.27, 1.0]
             usd_helper.create_obstacle_animation(
-                sphere_traj, base_frame=base_frame, base_t_obstacle_pose=base_t_obstacle_pose, obstacles_frame="curobo/robot_collision"
+                sphere_traj,
+                base_frame=base_frame,
+                base_t_obstacle_pose=base_t_obstacle_pose,
+                obstacles_frame="curobo/robot_collision",
             )
-        
+
         if debug_info is not None:
-            if 'debug_posi' in debug_info.keys():
-                for i in range(debug_info['debug_posi'].shape[-2]):
+            if "debug_posi" in debug_info.keys():
+                for i in range(debug_info["debug_posi"].shape[-2]):
                     new_name = join_path(base_frame, f"debug_p/hp{i}")
-                    new_object = Sphere(name=new_name, pose=[0,0,0,1,0,0,0], radius=0.001, color=[0, 255, 255,1])
+                    new_object = Sphere(
+                        name=new_name,
+                        pose=[0, 0, 0, 1, 0, 0, 0],
+                        radius=0.001,
+                        color=[0, 255, 255, 1],
+                    )
                     usd_helper.add_sphere_to_stage(new_object, base_frame)
                     curr_prim = usd_helper.stage.GetPrimAtPath(new_name)
                     form = UsdGeom.Xformable(curr_prim).GetOrderedXformOps()
 
                     pos_form = form[0]
                     quat_form = form[1]
-                    for j in range(debug_info['debug_posi'].shape[0]):
-                        pose = list(debug_info["debug_posi"][j, i]) + [1,0,0,0]
+                    for j in range(debug_info["debug_posi"].shape[0]):
+                        pose = list(debug_info["debug_posi"][j, i]) + [1, 0, 0, 0]
                         c_p, c_q = get_position_quat(pose, True)
                         pos_form.Set(time=j * usd_helper.interpolation_steps, value=c_p)
                         quat_form.Set(time=j * usd_helper.interpolation_steps, value=c_q)
-                        
-            if 'grad' in debug_info.keys() and 'hp' in debug_info.keys():
-                usd_helper.create_arrow_animation(debug_info['grad'], debug_info['hp'], base_frame, 
-                                                  'debug_grad/arr', [148,0,211,1], 0.001)
-            if 'debug_normal' in debug_info.keys() and 'op' in debug_info.keys():
-                usd_helper.create_arrow_animation(debug_info['debug_normal'], debug_info['op'], base_frame, 
-                                                  'debug_normal/arr', [0,127,255,1], 0.1)
-            
+
+            if "grad" in debug_info.keys() and "hp" in debug_info.keys():
+                usd_helper.create_arrow_animation(
+                    debug_info["grad"],
+                    debug_info["hp"],
+                    base_frame,
+                    "debug_grad/arr",
+                    [148, 0, 211, 1],
+                    0.001,
+                )
+            if "debug_normal" in debug_info.keys() and "op" in debug_info.keys():
+                usd_helper.create_arrow_animation(
+                    debug_info["debug_normal"],
+                    debug_info["op"],
+                    base_frame,
+                    "debug_normal/arr",
+                    [0, 127, 255, 1],
+                    0.1,
+                )
+
         usd_helper.write_stage_to_file(save_path, flatten=flatten_usd)
 
-    def create_arrow_animation(usd_helper, dir_tensor, start_tensor, base_frame, name_tmp, color, scale):
+    def create_arrow_animation(
+        usd_helper, dir_tensor, start_tensor, base_frame, name_tmp, color, scale
+    ):
         for i in range(dir_tensor.shape[-2]):
             if (dir_tensor[:, i, ...] != 0).sum() == 0:
-                continue 
-            root_path1 = join_path(base_frame, name_tmp + str(i)) 
+                continue
+            root_path1 = join_path(base_frame, name_tmp + str(i))
             obj_geom1 = UsdGeom.Cylinder.Define(usd_helper.stage, root_path1)
             obj_geom1.CreateRadiusAttr(0.002)
             obj_geom1.CreateHeightAttr(1)
@@ -979,16 +1048,28 @@ class UsdHelper:
 
             for j in range(dir_tensor.shape[0]):
                 start = start_tensor[j, i]
-                grad = - dir_tensor[j, i]
+                grad = -dir_tensor[j, i]
                 length = min(grad.norm() * scale, 1)
                 grad_direct = normalize_vector(grad)
                 if length == 0:
-                    form_scale.Set(time=j * usd_helper.interpolation_steps, value=Gf.Vec3f([0,0,0]))
+                    form_scale.Set(
+                        time=j * usd_helper.interpolation_steps, value=Gf.Vec3f([0, 0, 0])
+                    )
                 else:
-                    form_trans.Set(time=j * usd_helper.interpolation_steps, value=Gf.Vec3f(list(start+grad_direct/2*length)))
-                    form_rot.Set(time=j * usd_helper.interpolation_steps, value=Gf.Quatf(Gf.Rotation(Gf.Vec3d([0,0,1]), Gf.Vec3d(list(grad_direct))).GetQuat()))
-                    form_scale.Set(time=j * usd_helper.interpolation_steps, value=Gf.Vec3f([1,1,length]))
-        return 
+                    form_trans.Set(
+                        time=j * usd_helper.interpolation_steps,
+                        value=Gf.Vec3f(list(start + grad_direct / 2 * length)),
+                    )
+                    form_rot.Set(
+                        time=j * usd_helper.interpolation_steps,
+                        value=Gf.Quatf(
+                            Gf.Rotation(Gf.Vec3d([0, 0, 1]), Gf.Vec3d(list(grad_direct))).GetQuat()
+                        ),
+                    )
+                    form_scale.Set(
+                        time=j * usd_helper.interpolation_steps, value=Gf.Vec3f([1, 1, length])
+                    )
+        return
 
     @staticmethod
     def load_robot(

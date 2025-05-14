@@ -1,8 +1,8 @@
 # BODex
 
-A GPU-based efficient pipeline for dexterous grasp synthesis built on [cuRobo](https://github.com/NVlabs/curobo/tree/main), proposed in *BODex: Scalable and Efficient Robotic Dexterous Grasp Synthesis Using Bilevel Optimization [ICRA 2025]*.
+A GPU-based efficient pipeline for dexterous grasp synthesis built on [cuRobo](https://github.com/NVlabs/curobo/tree/main), proposed in *[ICRA 2025] BODex: Scalable and Efficient Robotic Dexterous Grasp Synthesis Using Bilevel Optimization*.
 
-[Project page](https://pku-epic.github.io/BODex/) ｜ [Paper](https://arxiv.org/abs/2412.16490) ｜ [Dataset](https://huggingface.co/datasets/JiayiChenPKU/BODex) ｜ [Benchmark code](https://github.com/JYChen18/DexGraspBench) ｜ [Learning code (TODO)](:TODO)
+[Project page](https://pku-epic.github.io/BODex/) ｜ [Paper](https://arxiv.org/abs/2412.16490) ｜ [Dataset](https://huggingface.co/datasets/JiayiChenPKU/BODex) ｜ [Benchmark code](https://github.com/JYChen18/DexGraspBench) ｜ [Learning code](https://github.com/JYChen18/DexLearn)
 
 ## Introduction
 ### Main Features
@@ -12,6 +12,13 @@ A GPU-based efficient pipeline for dexterous grasp synthesis built on [cuRobo](h
 ### Highlights
 - **Efficient**: Capable of synthesizing millions of grasps per day using a single NVIDIA 3090 GPU.
 - **Generalizable**: Supports different hands and a wide range of objects.
+
+### Project using BODex
+Some projects *make modifications* on our BODex pipeline to synthesize large-scale datasets of grasping poses, such as [DexGraspNet 2.0](https://pku-epic.github.io/DexGraspNet2.0/) and [GraspVLA](https://pku-epic.github.io/GraspVLA-web/).
+
+Looking for more diverse and higher-quality dexterous grasps? Check out [Dexonomy](https://pku-epic.github.io/Dexonomy).
+
+
 
 ## Getting Started
 1. **Install git lfs**: Before `git clone` this repository, please make sure that the git lfs has been installed by `sudo apt install git-lfs`.
@@ -27,7 +34,7 @@ pip install -e . --no-build-isolation
 
 pip install usd-core 
 conda install pytorch-scatter -c pyg
-conda install coal -c conda-forge   # https://github.com/coal-library/coal
+conda install coal==3.0.1 -c conda-forge   # https://github.com/coal-library/coal
 
 pip uninstall numpy
 pip install numpy==1.26.4
@@ -36,10 +43,13 @@ cd src/curobo/geom/cpp
 python setup.py install    # install coal_openmp_wrapper
 ```
 
-3. **Prepare object assets**: Download our pre-processed object assets `DGN_obj_processed.zip` and `DGN_obj_split.zip` from [here](https://huggingface.co/datasets/JiayiChenPKU/BODex) and organize the unzipped folders as below. Alternatively, new object assets can be pre-processed using [MeshProcess](https://github.com/JYChen18/MeshProcess).
+3. **Prepare object assets**: Download our pre-processed object assets `DGN_2k_main.zip` from [here](https://huggingface.co/datasets/JiayiChenPKU/BODex) and organize the unzipped folders as below. Alternatively, new object assets can be pre-processed using [MeshProcess](https://github.com/JYChen18/MeshProcess).
 ```
-src/curobo/content/assets/object/DGN_obj
+src/curobo/content/assets/object/DGN_2k
 |- processed_data
+|  |- core_bottle_1a7ba1f4c892e2da30711cdbdbc73924
+|  |_ ...
+|- scene_cfg
 |  |- core_bottle_1a7ba1f4c892e2da30711cdbdbc73924
 |  |_ ...
 |- valid_split
@@ -75,10 +85,15 @@ python example_grasp/visualize_npy.py -c sim_shadow/fc.yml -p debug -m grasp
 
 6. **Evaluate grasp poses and filter out bad ones**: please see [DexGraspBench](https://github.com/JYChen18/DexGraspBench).
 
-## Project using BODex
-Some projects *make modifications* on our pipeline to quickly synthesize large-scale datasets of grasping poses, such as 
-- [DexGraspNet2.0](https://pku-epic.github.io/DexGraspNet2.0/)
-<!-- - [GraspVLA (coming soon)]() -->
+
+## License
+
+The code from cuRobo is used under the NVIDIA license. All other parts of this work are licensed under [CC BY-NC 4.0][cc-by-nc].
+
+[![CC BY-NC 4.0][cc-by-nc-image]][cc-by-nc]
+
+[cc-by-nc]: https://creativecommons.org/licenses/by-nc/4.0/
+[cc-by-nc-image]: https://licensebuttons.net/l/by-nc/4.0/88x31.png
 
 ## Citation
 

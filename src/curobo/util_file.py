@@ -114,9 +114,11 @@ def join_path(path1: str, path2: str) -> str:
     else:
         return path2
 
+
 def remove_path(path):
-    os.system(f'rm {path}')
-    return 
+    os.system(f"rm {path}")
+    return
+
 
 def load_json(file_path):
     if isinstance(file_path, str):
@@ -126,9 +128,11 @@ def load_json(file_path):
         json_params = file_path
     return json_params
 
+
 def write_json(data: Dict, file_path):
     with open(file_path, "w") as file:
         json.dump(data, file, indent=1)
+
 
 def load_yaml(file_path: Union[str, Dict]) -> Dict:
     """Load yaml file and return as dictionary. If file_path is a dictionary, return as is.
@@ -253,33 +257,20 @@ def get_cpp_path():
     return os.path.join(path, "curobolib/cpp")
 
 
-def get_pathlist_from_template(template_path, id_lst_path=None, id=None, start=None, end=None, shuffle=False, repeat=1, indicator=None):
-    dir_path, added_path = template_path.split(indicator)
-    
-    if id is not None:
-        obj_code_list = id
-        full_path_list = [join_path(dir_path, p + added_path) for p in obj_code_list]
-    elif id_lst_path is not None:
-        obj_code_list = load_json(os.path.join(get_assets_path(),id_lst_path))
-        if shuffle:
-            obj_code_list = np.random.permutation(obj_code_list)
-        full_path_list = [join_path(dir_path, p + added_path) for p in obj_code_list]
-        if start is not None and end is not None:
-            obj_code_list = obj_code_list[start:end]
-            full_path_list = full_path_list[start:end]
-    else:
-        full_path_list = sorted(glob.glob(dir_path+'**/**'+added_path))
-        if len(full_path_list) == 0:
-            full_path_list = sorted(glob.glob(dir_path+'**'+added_path))
-        obj_code_list = [p.split(added_path)[0].split(dir_path)[-1] for p in full_path_list]        
-        if start is not None and end is not None:
-            obj_code_list = obj_code_list[start:end]
-            full_path_list = full_path_list[start:end]
-    # repeat 
-    obj_code_list = list(np.repeat(np.array(obj_code_list), repeat))
-    full_path_list = list(np.repeat(np.array(full_path_list), repeat))
-    log_warn(f'Using {len(obj_code_list)} objects in {template_path}')
-    return full_path_list, obj_code_list 
+def load_scene_cfg(scene_path):
+    scene_cfg = np.load(scene_path, allow_pickle=True).item()
+
+    def update_relative_path(d: dict):
+        for k, v in d.items():
+            if isinstance(v, dict):
+                update_relative_path(v)
+            elif k.endswith("_path") and isinstance(v, str):
+                d[k] = os.path.join(os.path.dirname(scene_path), v)
+        return
+
+    update_relative_path(scene_cfg["scene"])
+
+    return scene_cfg
 
 
 def add_cpp_path(sources: List[str]) -> List[str]:
