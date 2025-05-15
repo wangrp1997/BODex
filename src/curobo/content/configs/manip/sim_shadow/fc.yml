@@ -1,8 +1,8 @@
 world:
   type: scene_cfg
   template_path: object/DGN_2k/scene_cfg/**/floating/**.npy
-  start: 
-  end: 
+  start: 0
+  end: 100
 
 
 robot_file: "right_shadow_hand_sim.yml"

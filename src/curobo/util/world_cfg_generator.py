@@ -13,7 +13,9 @@ class GraspConfigDataset(Dataset):
     def __init__(self, type, template_path, start, end):
         assert type == "grasp"
         template_path = join_path(get_assets_path(), template_path)
-        self.grasp_path_lst = sorted(glob(template_path, recursive=True))[start:end]
+        self.grasp_path_lst = np.random.permutation(sorted(glob(template_path, recursive=True)))[
+            start:end
+        ]
         log_warn(
             f"From {template_path} get {len(self.grasp_path_lst)} grasps. Start: {start}, End: {end}."
         )
@@ -62,7 +64,7 @@ class WorldConfigDataset(Dataset):
     def __init__(self, type, template_path, start, end):
         assert type == "scene_cfg"
         scene_cfg_path = join_path(get_assets_path(), template_path)
-        self.scene_path_lst = sorted(glob(scene_cfg_path))[start:end]
+        self.scene_path_lst = np.random.permutation(sorted(glob(scene_cfg_path)))[start:end]
         log_warn(
             f"From {scene_cfg_path} get {len(self.scene_path_lst)} scene cfgs. Start: {start}, End: {end}."
         )

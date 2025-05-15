@@ -13,7 +13,7 @@ A GPU-based efficient pipeline for dexterous grasp synthesis built on [cuRobo](h
 - **Efficient**: Capable of synthesizing millions of grasps per day using a single NVIDIA 3090 GPU.
 - **Generalizable**: Supports different hands and a wide range of objects.
 
-### Project using BODex
+### Follow-up Work
 Some projects *make modifications* on our BODex pipeline to synthesize large-scale datasets of grasping poses, such as [DexGraspNet 2.0](https://pku-epic.github.io/DexGraspNet2.0/) and [GraspVLA](https://pku-epic.github.io/GraspVLA-web/).
 
 Looking for more diverse and higher-quality dexterous grasps? Check out [Dexonomy](https://pku-epic.github.io/Dexonomy).
@@ -43,7 +43,7 @@ cd src/curobo/geom/cpp
 python setup.py install    # install coal_openmp_wrapper
 ```
 
-3. **Prepare object assets**: Download our pre-processed object assets `DGN_2k_main.zip` from [here](https://huggingface.co/datasets/JiayiChenPKU/BODex) and organize the unzipped folders as below. Alternatively, new object assets can be pre-processed using [MeshProcess](https://github.com/JYChen18/MeshProcess).
+3. **Prepare object assets**: Download our pre-processed object assets `DGN_2k_processed.zip` from [Hugging Face](https://huggingface.co/datasets/JiayiChenPKU/BODex) and organize the unzipped folders as below. 
 ```
 src/curobo/content/assets/object/DGN_2k
 |- processed_data
@@ -56,6 +56,7 @@ src/curobo/content/assets/object/DGN_2k
 |  |- all.json
 |  |_ ...
 ```
+Alternatively, new object assets can be pre-processed using [MeshProcess](https://github.com/JYChen18/MeshProcess).
    
 4. **Synthesize grasp poses**: Each synthesized grasping data point includes a pre-grasp, a grasp, and a squeeze pose. 
 ```

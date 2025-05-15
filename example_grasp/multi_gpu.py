@@ -71,9 +71,6 @@ if __name__ == "__main__":
 
     manip_config_data = load_yaml(join_path(get_manip_configs_path(), args.manip_cfg_file))
 
-    scene_cfg_path_lst = sorted(
-        glob(join_path(get_assets_path(), manip_config_data["world"]["template_path"]))
-    )
     if (
         manip_config_data["world"]["start"] is not None
         and manip_config_data["world"]["end"] is not None
@@ -81,7 +78,9 @@ if __name__ == "__main__":
         all_obj_num = manip_config_data["world"]["end"] - manip_config_data["world"]["start"]
         original_start = manip_config_data["world"]["start"]
     else:
-        all_obj_num = len(scene_cfg_path_lst)
+        all_obj_num = len(
+            glob(join_path(get_assets_path(), manip_config_data["world"]["template_path"]))
+        )
         original_start = 0
     obj_num_lst = np.array([all_obj_num // len(args.gpu)] * len(args.gpu))
     obj_num_lst[: (all_obj_num % len(args.gpu))] += 1
