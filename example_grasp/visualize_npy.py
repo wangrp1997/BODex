@@ -72,11 +72,11 @@ if __name__ == "__main__":
     manip_config_data["world"]["type"] = "grasp"
     if args.mode == "grasp":
         manip_config_data["world"]["template_path"] = os.path.join(
-            "output", save_folder, "**/**_grasp.npy"
+            "output", save_folder, "**/*_grasp.npy"
         )
     elif args.mode == "mogen":
         manip_config_data["world"]["template_path"] = os.path.join(
-            "output", save_folder, "**/**_mogen.npy"
+            "output", save_folder, "**/*_mogen.npy"
         )
     else:
         raise NotImplementedError

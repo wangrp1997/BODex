@@ -1,6 +1,6 @@
 world:
   type: scene_cfg
-  template_path: object/DGN_2k/scene_cfg/**/floating/**.npy
+  template_path: object/DGN_2k/scene_cfg/**/floating/*.npy
   start: 
   end: 
 
