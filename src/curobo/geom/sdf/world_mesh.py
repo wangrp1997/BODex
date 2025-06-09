@@ -95,6 +95,9 @@ class WorldMeshCollision(WorldPrimitiveCollision):
         if not isinstance(world_model, List):
             world_model = [world_model]
 
+        if contact_obj_names is None:
+            return 
+        
         if not isinstance(contact_obj_names, List):
             contact_obj_names = [contact_obj_names]
 

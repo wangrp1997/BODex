@@ -9,6 +9,39 @@ from curobo.util.logger import log_warn
 from curobo.util_file import load_json, load_scene_cfg, join_path, get_assets_path
 
 
+def numpy_quaternion_to_matrix(quaternions: np.ndarray) -> np.ndarray:
+    """
+    Convert rotations given as quaternions to rotation matrices.
+
+    Args:
+        quaternions: quaternions with real part first,
+            as tensor of shape (..., 4).
+
+    Returns:
+        Rotation matrices as tensor of shape (..., 3, 3).
+    """
+    r, i, j, k = np.split(quaternions, 4, -1)
+
+    two_s = 2.0 / (quaternions * quaternions).sum(-1, keepdims=True)
+
+    o = np.stack(
+        (
+            1 - two_s * (j * j + k * k),
+            two_s * (i * j - k * r),
+            two_s * (i * k + j * r),
+            two_s * (i * j + k * r),
+            1 - two_s * (i * i + k * k),
+            two_s * (j * k - i * r),
+            two_s * (i * k - j * r),
+            two_s * (j * k + i * r),
+            1 - two_s * (i * i + j * j),
+        ),
+        -1,
+    )
+
+    return o.reshape(quaternions.shape[:-1] + (3, 3))
+
+
 class GraspConfigDataset(Dataset):
     def __init__(self, type, template_path, start, end):
         assert type == "grasp"
@@ -59,6 +92,45 @@ def scenecfg2worldcfg(scene_cfg):
     return world_cfg
 
 
+class DexonomyConfigDataset(Dataset):
+    def __init__(self, type, template_path, start, end):
+        assert type == "dexonomy"
+        self.grasp_path_lst = np.random.permutation(sorted(glob(template_path, recursive=True)))[
+            start:end
+        ]
+        log_warn(
+            f"From {template_path} get {len(self.grasp_path_lst)} grasps. Start: {start}, End: {end}."
+        )
+        return
+
+    def __len__(self):
+        return len(self.grasp_path_lst)
+
+    def __getitem__(self, index):
+        full_path = self.grasp_path_lst[index]
+        cfg = np.load(full_path, allow_pickle=True).item()
+
+        scene_cfg = load_scene_cfg(join_path(get_assets_path(), f"../{cfg['scene_path']}"))
+
+        if cfg["hand_type"] == "real_shadow":
+            for k, v in cfg.items():
+                if k.endswith("_qpos"):
+                    # Change qpos order of thumb
+                    cfg[k] = np.concatenate([v[:, :7], v[:, -5:], v[:, 7:-5]], axis=-1)
+                    # Add a translation bias of palm which is included in XML but ignored in URDF
+                    tmp_rot = numpy_quaternion_to_matrix(v[:, 3:7])
+                    cfg[k][:, :3] += (tmp_rot @ np.array([0, 0, 0.034]).reshape(1, 3, 1)).squeeze(
+                        -1
+                    )
+        else:
+            raise NotImplementedError
+
+        cfg["move_cfg"] = scene_cfg["task"]
+        cfg["world_cfg"] = scenecfg2worldcfg(scene_cfg)
+        cfg["save_prefix"] = full_path.split("succgrasp/")[-1].split("grasp.npy")[0]
+        return cfg
+
+
 class WorldConfigDataset(Dataset):
 
     def __init__(self, type, template_path, start, end):
@@ -99,6 +171,10 @@ class WorldConfigDataset(Dataset):
 
 
 def _world_config_collate_fn(list_data):
+    if "move_cfg" in list_data[0]:
+        move_cfg_lst = [i.pop("move_cfg") for i in list_data]
+    else:
+        move_cfg_lst = None
     if "world_cfg" in list_data[0]:
         world_cfg_lst = [i.pop("world_cfg") for i in list_data]
     else:
@@ -106,6 +182,8 @@ def _world_config_collate_fn(list_data):
     ret_data = default_collate(list_data)
     if world_cfg_lst is not None:
         ret_data["world_cfg"] = world_cfg_lst
+    if move_cfg_lst is not None:
+        ret_data["move_cfg"] = move_cfg_lst
     return ret_data
 
 
@@ -114,6 +192,8 @@ def get_world_config_dataloader(configs, batch_size):
         dataset = WorldConfigDataset(**configs)
     elif configs["type"] == "grasp":
         dataset = GraspConfigDataset(**configs)
+    elif configs["type"] == "dexonomy":
+        dataset = DexonomyConfigDataset(**configs)
     else:
         raise NotImplementedError
 
