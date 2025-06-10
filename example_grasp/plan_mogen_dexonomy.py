@@ -44,14 +44,14 @@ class PlanningFailureError(Exception):
     pass
 
 
-def get_armhand_qpos(arm_ik: IKSolver, hand_pose_qpos, retract_qpos, debug=False):
+def get_armhand_qpos(arm_ik: IKSolver, hand_pose_qpos, retract_qpos):
     ik_result = arm_ik.solve_single(
         Pose.from_list(hand_pose_qpos.view(-1)[:7]),
-        seed_config=retract_qpos.view(1, -1)[:, : arm_ik.kinematics.dof],
+        seed_config=retract_qpos.view(1, 1, -1)[..., : arm_ik.kinematics.dof],
         retract_config=retract_qpos.view(1, -1)[:, : arm_ik.kinematics.dof],
     )
     if not ik_result.success:
-        raise PlanningFailureError("IK fail")
+        raise PlanningFailureError("IK fails")
     armhand_qpos = torch.cat(
         [ik_result.solution.squeeze(1), hand_pose_qpos.view(1, -1)[:, 7:]], dim=-1
     )
@@ -157,9 +157,7 @@ if __name__ == "__main__":
                 ik_robot_cfg,
                 world_model[0],
                 tensor_args=tensor_args,
-                position_threshold=0.001,
-                use_particle_opt=False,
-                num_seeds=1,
+                high_precision=True,
             )
             arm_iksolver = IKSolver(ik_config)
         else:
@@ -173,15 +171,11 @@ if __name__ == "__main__":
         grasp_pose, grasp_joint = grasp_qpos[:, :7], grasp_qpos[:, 7:]
         squeeze_pose, squeeze_joint = squeeze_qpos[:, :7], squeeze_qpos[:, 7:]
 
-        smt = time.time()
-
         if mg is None:
             motion_gen_cfg = MotionGenConfig.load_from_robot_config(
                 manip_config_data["robot_file_with_arm"],
                 world_model=world_model[0],
                 collision_activation_distance=0.025,
-                # ik_opt_iters=200,
-                # grad_trajopt_iters=200,
             )
             mg = MotionGen(motion_gen_cfg)
         else:
@@ -191,13 +185,13 @@ if __name__ == "__main__":
             # Plan approaching trajectory
             init_arm_qpos = tensor_args.to_device(manip_config_data["mogen_init"]).view(1, -1)
             pregrasp_ah_qpos_lst = [init_arm_qpos.clone()]
-            for i in range(len(pregrasp_qpos)):
+            for i in reversed(range(len(pregrasp_qpos))):
                 pregrasp_ah_qpos_lst.append(
                     get_armhand_qpos(arm_iksolver, pregrasp_qpos[i], pregrasp_ah_qpos_lst[-1])
                 )
-            pregrasp_qpos = torch.cat(pregrasp_ah_qpos_lst[1:], dim=0)
+            pregrasp_qpos = torch.flip(torch.cat(pregrasp_ah_qpos_lst[1:], dim=0), dims=[0])
             pregrasp_vel = (pregrasp_qpos[0:1] - pregrasp_qpos[1:2]) / mg.interpolation_dt / 10
-
+            
             target_state = JointState.from_numpy(
                 position=pregrasp_qpos[0:1],
                 velocity=pregrasp_vel,
@@ -213,36 +207,34 @@ if __name__ == "__main__":
                 ),
             )
             if sum(mogen_result.success) == 0:
-                raise PlanningFailureError(f"MoGen Failure")
+                raise PlanningFailureError(f"MoGen fails")
             approach_qpos = torch.flip(mogen_result.optimized_plan.position[2:], [0])
 
-            # grasp and squeeze pose
+            # grasp and squeeze qpos
             grasp_qpos = get_armhand_qpos(arm_iksolver, grasp_qpos, pregrasp_qpos[-1])
             squeeze_qpos = get_armhand_qpos(arm_iksolver, squeeze_qpos, grasp_qpos)
 
+            # move qpos
             move_pose_lst = mg.tensor_args.to_device(
                 interp_move_traj(squeeze_pose[0].cpu().numpy(), world_info_dict["move_cfg"], 10)
             )
             move_qpos_lst = [squeeze_qpos.clone()]
             for i in range(len(move_pose_lst)):
-                move_qpos_lst.append(
-                    get_armhand_qpos(
-                        arm_iksolver,
-                        torch.cat(
-                            [move_pose_lst[i], squeeze_qpos[0, arm_iksolver.kinematics.dof :]],
-                            dim=-1,
-                        ),
-                        move_qpos_lst[-1],
-                        debug=True,
-                    )
+                tmp_qpos = torch.cat(
+                    [move_pose_lst[i], squeeze_qpos[0, arm_iksolver.kinematics.dof :]], dim=-1
                 )
+                move_qpos_lst.append(get_armhand_qpos(arm_iksolver, tmp_qpos, move_qpos_lst[-1]))
             move_qpos = torch.cat(move_qpos_lst[1:], dim=0)
-        except PlanningFailureError:
+
+            # Check smoothness
+            stage2_qpos = torch.cat([pregrasp_qpos, grasp_qpos, squeeze_qpos, move_qpos], dim=-2)
+            if (stage2_qpos[1:, :8] - stage2_qpos[:-1, :8]).abs().max() > 0.1:
+                raise PlanningFailureError("Non-smooth IK fails")
+        except PlanningFailureError as e:
+            log_warn(e, world_info_dict["save_prefix"][0])
             continue
         if "usd" in args.save_mode:
-            world_info_dict["robot_pose"] = torch.cat(
-                [approach_qpos, pregrasp_qpos, grasp_qpos, squeeze_qpos, move_qpos], dim=-2
-            )
+            world_info_dict["robot_pose"] = torch.cat([approach_qpos, stage2_qpos], dim=-2)
 
         world_info_dict["approach_qpos"] = approach_qpos
         world_info_dict["pregrasp_qpos"] = pregrasp_qpos
@@ -252,5 +244,5 @@ if __name__ == "__main__":
 
         world_info_dict["world_model"] = world_model
         save_mogen.save_piece(world_info_dict)
-        log_warn(f"Sinlge Time (mogen): {time.time()-smt}")
+        log_warn(f"Sinlge Time (mogen): {time.time()-sst}")
     log_warn(f"Total Time: {time.time()-tst}")

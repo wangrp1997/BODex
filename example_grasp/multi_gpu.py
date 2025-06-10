@@ -24,6 +24,13 @@ def worker(gpu_id, task, manip_path, save_folder, output_path, save_mode, parall
                 stdout=output_file,
                 stderr=output_file,
             )
+        elif task == "mogen_dexonomy":
+            subprocess.call(
+                f"CUDA_VISIBLE_DEVICES={gpu_id} python example_grasp/plan_mogen_dexonomy.py -c {manip_path} -f {save_folder} -m {save_mode}",
+                shell=True,
+                stdout=output_file,
+                stderr=output_file,
+            )
         else:
             subprocess.call(
                 f"CUDA_VISIBLE_DEVICES={gpu_id} python example_grasp/plan_mogen_batch.py -c {manip_path} -f {save_folder} -m {save_mode} -t {task}",
@@ -47,7 +54,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-t",
         "--task",
-        choices=["grasp", "mogen", "grasp_and_mogen"],
+        choices=["grasp", "mogen", "grasp_and_mogen", "mogen_dexonomy"],
         default="grasp",
     )
 
@@ -79,7 +86,7 @@ if __name__ == "__main__":
         original_start = manip_config_data["world"]["start"]
     else:
         all_obj_num = len(
-            glob(join_path(get_assets_path(), manip_config_data["world"]["template_path"]))
+            glob(join_path(get_assets_path(), manip_config_data["world"]["template_path"]), recursive=True)
         )
         original_start = 0
     obj_num_lst = np.array([all_obj_num // len(args.gpu)] * len(args.gpu))
