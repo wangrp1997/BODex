@@ -113,19 +113,17 @@ class DexonomyConfigDataset(Dataset):
         scene_cfg = load_scene_cfg(join_path(get_assets_path(), f"../{cfg['scene_path']}"))
 
         if cfg["hand_type"] == "real_shadow":
-            for k, v in cfg.items():
-                if k.endswith("_qpos"):
-                    # Change qpos order of thumb
-                    cfg[k] = np.concatenate([v[:, :7], v[:, -5:], v[:, 7:-5]], axis=-1)
-                    # Add a translation bias of palm which is included in XML but ignored in URDF
-                    tmp_rot = numpy_quaternion_to_matrix(v[:, 3:7])
-                    cfg[k][:, :3] += (tmp_rot @ np.array([0, 0, 0.034]).reshape(1, 3, 1)).squeeze(
-                        -1
-                    )
+            v = cfg["pregrasp_qpos"]
+            # Change qpos order of thumb
+            cfg["pregrasp_qpos_urdf"] = np.concatenate([v[:, :7], v[:, -5:], v[:, 7:-5]], axis=-1)
+            # Add a translation bias of palm which is included in XML but ignored in URDF
+            tmp_rot = numpy_quaternion_to_matrix(v[:, 3:7])
+            cfg["pregrasp_qpos_urdf"][:, :3] += (
+                tmp_rot @ np.array([0, 0, 0.034]).reshape(1, 3, 1)
+            ).squeeze(-1)
         else:
             raise NotImplementedError
 
-        cfg["move_cfg"] = scene_cfg["task"]
         cfg["world_cfg"] = scenecfg2worldcfg(scene_cfg)
         cfg["save_prefix"] = full_path.split("succgrasp/")[-1].split("grasp.npy")[0]
         return cfg
@@ -171,10 +169,6 @@ class WorldConfigDataset(Dataset):
 
 
 def _world_config_collate_fn(list_data):
-    if "move_cfg" in list_data[0]:
-        move_cfg_lst = [i.pop("move_cfg") for i in list_data]
-    else:
-        move_cfg_lst = None
     if "world_cfg" in list_data[0]:
         world_cfg_lst = [i.pop("world_cfg") for i in list_data]
     else:
@@ -182,8 +176,6 @@ def _world_config_collate_fn(list_data):
     ret_data = default_collate(list_data)
     if world_cfg_lst is not None:
         ret_data["world_cfg"] = world_cfg_lst
-    if move_cfg_lst is not None:
-        ret_data["move_cfg"] = move_cfg_lst
     return ret_data
 
 

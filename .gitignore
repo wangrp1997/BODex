@@ -212,3 +212,5 @@ docs/*
 
 src/curobo/content/assets/object
 src/curobo/content/assets/output
+
+debug*

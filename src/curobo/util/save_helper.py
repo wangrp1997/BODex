@@ -70,11 +70,9 @@ class SaveHelper:
         if self.npy_save_key is None:
             self.npy_save_key = [
                 "robot_pose",
-                "approach_qpos",
                 "pregrasp_qpos",
                 "grasp_qpos",
                 "squeeze_qpos",
-                "move_qpos",
                 "world_cfg",
                 "manip_name",
                 "scene_path",
