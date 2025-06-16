@@ -16,7 +16,7 @@ import datetime
 
 
 def worker(gpu_id, task, manip_path, save_folder, output_path, save_mode, parallel_world):
-    with open(output_path, "w") as output_file:
+    with open(output_path, "a") as output_file:
         if task == "grasp":
             subprocess.call(
                 f"CUDA_VISIBLE_DEVICES={gpu_id} python example_grasp/plan_batch_env.py -c {manip_path} -f {save_folder} -m {save_mode} -w {parallel_world}",
@@ -52,6 +52,22 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "-i",
+        "--template_path",
+        type=str,
+        default=None,
+        help="Input template path.",
+    )
+
+    parser.add_argument(
+        "-e",
+        "--exp_name",
+        type=str,
+        default="debug",
+        help="folder to save. Overwrite the one in manip config.",
+    )
+
+    parser.add_argument(
         "-t",
         "--task",
         choices=["grasp", "mogen", "grasp_and_mogen", "mogen_dexonomy"],
@@ -77,6 +93,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     manip_config_data = load_yaml(join_path(get_manip_configs_path(), args.manip_cfg_file))
+    manip_config_data["world"]["template_path"] = args.template_path
+    manip_config_data["exp_name"] = args.exp_name
 
     if (
         manip_config_data["world"]["start"] is not None
@@ -86,7 +104,10 @@ if __name__ == "__main__":
         original_start = manip_config_data["world"]["start"]
     else:
         all_obj_num = len(
-            glob(join_path(get_assets_path(), manip_config_data["world"]["template_path"]), recursive=True)
+            glob(
+                join_path(get_assets_path(), manip_config_data["world"]["template_path"]),
+                recursive=True,
+            )
         )
         original_start = 0
     obj_num_lst = np.array([all_obj_num // len(args.gpu)] * len(args.gpu))
@@ -101,7 +122,7 @@ if __name__ == "__main__":
             args.manip_cfg_file[:-4], datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
         )
 
-    runinfo_folder = os.path.join(get_output_path(), save_folder, "runinfo")
+    runinfo_folder = os.path.join(get_output_path(), save_folder, "log/bodex_mogen")
     os.makedirs(runinfo_folder, exist_ok=True)
 
     # create tmp manip cfg files

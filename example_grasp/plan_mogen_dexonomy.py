@@ -98,16 +98,14 @@ if __name__ == "__main__":
     manip_config_data = load_yaml(join_path(get_manip_configs_path(), args.manip_cfg_file))
 
     if args.save_folder is not None:
-        save_folder = os.path.join(args.save_folder, "graspdata")
+        save_folder = os.path.join(args.save_folder, "mogen")
     elif manip_config_data["exp_name"] is not None:
-        save_folder = os.path.join(
-            args.manip_cfg_file[:-4], manip_config_data["exp_name"], "graspdata"
-        )
+        save_folder = os.path.join(args.manip_cfg_file[:-4], manip_config_data["exp_name"], "mogen")
     else:
         save_folder = os.path.join(
             args.manip_cfg_file[:-4],
             datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"),
-            "graspdata",
+            "mogen",
         )
 
     assert manip_config_data["world"]["type"] == "dexonomy"
@@ -118,7 +116,7 @@ if __name__ == "__main__":
     save_mogen = SaveHelper(
         robot_file=manip_config_data["robot_file_with_arm"],
         save_folder=save_folder,
-        task_name="mogen",
+        task_name="grasp",
         mode=args.save_mode,
     )
 
@@ -142,7 +140,7 @@ if __name__ == "__main__":
             continue
 
         for k, v in world_info_dict.items():
-            if "qpos" in k or k == "move_cfg":
+            if "qpos" in k or k == "scene_path":
                 world_info_dict[k] = v[0]
 
         world_model = [WorldConfig.from_dict(world_info_dict["world_cfg"][0])]
@@ -209,6 +207,19 @@ if __name__ == "__main__":
 
         world_info_dict["robot_pose"] = torch.flip(mogen_result.optimized_plan.position[2:-2], [0])
         world_info_dict["world_model"] = world_model
+        world_info_dict.pop("world_cfg")
+        if "usd" not in args.save_mode:
+            if world_info_dict["hand_type"][0] == "real_shadow":
+                world_info_dict["robot_pose"] = torch.cat(
+                    [
+                        world_info_dict["robot_pose"][:, :8],
+                        world_info_dict["robot_pose"][:, 13:],
+                        world_info_dict["robot_pose"][:, 8:13],
+                    ],
+                    axis=-1,
+                )
+            else:
+                raise NotImplementedError
         save_mogen.save_piece(world_info_dict)
         log_warn(f"Sinlge Time (mogen): {time.time()-sst}")
     log_warn(f"Total Time: {time.time()-tst}")

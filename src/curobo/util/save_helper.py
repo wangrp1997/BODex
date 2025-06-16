@@ -26,6 +26,8 @@ def dict_piece(d: Dict, piece_id: int, piece_num: int):
         elif v is not None:
             each = len(v) // piece_num
             new_d[k] = v[piece_id * each : (piece_id + 1) * each]
+            if each == 1 and isinstance(new_d[k][0], str):
+                new_d[k] = new_d[k][0]
         else:
             new_d[k] = None
 
@@ -72,6 +74,7 @@ class SaveHelper:
                 "robot_pose",
                 "pregrasp_qpos",
                 "grasp_qpos",
+                "evolution_num",
                 "squeeze_qpos",
                 "world_cfg",
                 "manip_name",

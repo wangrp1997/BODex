@@ -125,7 +125,9 @@ class DexonomyConfigDataset(Dataset):
             raise NotImplementedError
 
         cfg["world_cfg"] = scenecfg2worldcfg(scene_cfg)
-        cfg["save_prefix"] = full_path.split("succgrasp/")[-1].split("grasp.npy")[0]
+        cfg["save_prefix"] = (
+            full_path.split("succgrasp/")[-1].split("graspdata/")[-1].split("grasp.npy")[0]
+        )
         return cfg
 
 
