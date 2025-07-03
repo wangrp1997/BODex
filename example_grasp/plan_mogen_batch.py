@@ -108,16 +108,16 @@ if __name__ == "__main__":
     manip_config_data = load_yaml(join_path(get_manip_configs_path(), args.manip_cfg_file))
 
     if args.save_folder is not None:
-        save_folder = os.path.join(args.save_folder, "graspdata")
+        save_folder = os.path.join(args.save_folder, "grasp_data")
     elif manip_config_data["exp_name"] is not None:
         save_folder = os.path.join(
-            args.manip_cfg_file[:-4], manip_config_data["exp_name"], "graspdata"
+            args.manip_cfg_file[:-4], manip_config_data["exp_name"], "grasp_data"
         )
     else:
         save_folder = os.path.join(
             args.manip_cfg_file[:-4],
             datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"),
-            "graspdata",
+            "grasp_data",
         )
 
     if "grasp" in args.task:

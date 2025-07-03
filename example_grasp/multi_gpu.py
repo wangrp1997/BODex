@@ -63,7 +63,7 @@ if __name__ == "__main__":
         "-e",
         "--exp_name",
         type=str,
-        default="debug",
+        default=None,
         help="folder to save. Overwrite the one in manip config.",
     )
 
@@ -93,8 +93,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     manip_config_data = load_yaml(join_path(get_manip_configs_path(), args.manip_cfg_file))
-    manip_config_data["world"]["template_path"] = args.template_path
-    manip_config_data["exp_name"] = args.exp_name
+    if args.template_path is not None:
+        manip_config_data["world"]["template_path"] = args.template_path
 
     if (
         manip_config_data["world"]["start"] is not None
@@ -115,14 +115,25 @@ if __name__ == "__main__":
     assert obj_num_lst.sum() == all_obj_num
 
     p_list = []
+    if args.exp_name is not None:
+        manip_config_data["exp_name"] = args.exp_name
     if manip_config_data["exp_name"] is not None:
-        save_folder = os.path.join(args.manip_cfg_file[:-4], manip_config_data["exp_name"])
+        if not os.path.abspath(manip_config_data["exp_name"]):
+            save_folder = os.path.join(
+                args.manip_cfg_file[:-4], manip_config_data["exp_name"], "grasp_data"
+            )
+        else:
+            save_folder = manip_config_data["exp_name"]
     else:
         save_folder = os.path.join(
-            args.manip_cfg_file[:-4], datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+            args.manip_cfg_file[:-4],
+            datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"),
+            "grasp_data",
         )
 
-    runinfo_folder = os.path.join(get_output_path(), save_folder, "log/bodex_mogen")
+    runinfo_folder = os.path.join(
+        get_output_path(), os.path.dirname(save_folder), "log/bodex_mogen"
+    )
     os.makedirs(runinfo_folder, exist_ok=True)
 
     # create tmp manip cfg files

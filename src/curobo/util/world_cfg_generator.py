@@ -126,7 +126,7 @@ class DexonomyConfigDataset(Dataset):
 
         cfg["world_cfg"] = scenecfg2worldcfg(scene_cfg)
         cfg["save_prefix"] = (
-            full_path.split("succgrasp/")[-1].split("graspdata/")[-1].split("grasp.npy")[0]
+            full_path.split("succ_grasp/")[-1].split("grasp_data/")[-1].split("grasp.npy")[0]
         )
         return cfg
 
