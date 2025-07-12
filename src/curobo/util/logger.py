@@ -28,7 +28,7 @@ def setup_logger(level="info", logger_name: str = "curobo"):
     Raises:
         ValueError: If log level is not one of [info, debug, warning, error].
     """
-    FORMAT = "[%(levelname)s] [%(name)s] %(message)s"
+    FORMAT = "[%(asctime)s][%(name)s][%(levelname)s] %(message)s"
     if level == "info":
         level = logging.INFO
     elif level == "debug":
@@ -39,7 +39,7 @@ def setup_logger(level="info", logger_name: str = "curobo"):
         level = logging.WARN
     else:
         raise ValueError("Log level should be one of [info,debug, warn, error]")
-    logging.basicConfig(format=FORMAT, level=level)
+    logging.basicConfig(format=FORMAT, level=level, datefmt="%Y-%m-%d %H:%M:%S")
     logger = logging.getLogger(logger_name)
     logger.setLevel(level=level)
 

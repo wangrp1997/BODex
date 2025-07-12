@@ -74,7 +74,7 @@ class SaveHelper:
                 "robot_pose",
                 "pregrasp_qpos",
                 "grasp_qpos",
-                "evolution_num",
+                "n_evo",
                 "squeeze_qpos",
                 "world_cfg",
                 "manip_name",

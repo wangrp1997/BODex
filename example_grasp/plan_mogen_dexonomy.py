@@ -211,7 +211,7 @@ if __name__ == "__main__":
         world_info_dict["world_model"] = world_model
         world_info_dict.pop("world_cfg")
         if "usd" not in args.save_mode:
-            if world_info_dict["hand_type"][0] == "real_shadow":
+            if world_info_dict["hand_name"][0] == "real_shadow":
                 world_info_dict["robot_pose"] = torch.cat(
                     [
                         world_info_dict["robot_pose"][:, :8],

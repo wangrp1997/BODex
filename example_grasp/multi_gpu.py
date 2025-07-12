@@ -15,29 +15,17 @@ import multiprocessing
 import datetime
 
 
-def worker(gpu_id, task, manip_path, save_folder, output_path, save_mode, parallel_world):
+def worker(gpu_id, task, manip_path, save_folder, output_path, save_mode, parallel_world, skip):
     with open(output_path, "a") as output_file:
         if task == "grasp":
-            subprocess.call(
-                f"CUDA_VISIBLE_DEVICES={gpu_id} python example_grasp/plan_batch_env.py -c {manip_path} -f {save_folder} -m {save_mode} -w {parallel_world}",
-                shell=True,
-                stdout=output_file,
-                stderr=output_file,
-            )
+            cmd = f"CUDA_VISIBLE_DEVICES={gpu_id} python example_grasp/plan_batch_env.py -c {manip_path} -f {save_folder} -m {save_mode} -w {parallel_world}"
         elif task == "mogen_dexonomy":
-            subprocess.call(
-                f"CUDA_VISIBLE_DEVICES={gpu_id} python example_grasp/plan_mogen_dexonomy.py -c {manip_path} -f {save_folder} -m {save_mode}",
-                shell=True,
-                stdout=output_file,
-                stderr=output_file,
-            )
+            cmd = f"CUDA_VISIBLE_DEVICES={gpu_id} python example_grasp/plan_mogen_dexonomy.py -c {manip_path} -f {save_folder} -m {save_mode}"
         else:
-            subprocess.call(
-                f"CUDA_VISIBLE_DEVICES={gpu_id} python example_grasp/plan_mogen_batch.py -c {manip_path} -f {save_folder} -m {save_mode} -t {task}",
-                shell=True,
-                stdout=output_file,
-                stderr=output_file,
-            )
+            cmd = f"CUDA_VISIBLE_DEVICES={gpu_id} python example_grasp/plan_mogen_batch.py -c {manip_path} -f {save_folder} -m {save_mode} -t {task}"
+        if not skip:
+            cmd += " -k"
+        subprocess.call(cmd, shell=True, stdout=output_file, stderr=output_file)
 
 
 if __name__ == "__main__":
@@ -87,6 +75,13 @@ if __name__ == "__main__":
         type=int,
         default=20,
         help="parallel world num (only used when task=grasp)",
+    )
+
+    parser.add_argument(
+        "-k",
+        "--skip",
+        action="store_false",
+        help="If True, skip existing files. (default: True)",
     )
 
     parser.add_argument("-g", "--gpu", nargs="+", required=True, help="gpu id list")
@@ -155,6 +150,7 @@ if __name__ == "__main__":
                 output_path,
                 args.save_mode,
                 args.parallel_world,
+                args.skip,
             ),
         )
         p.start()
