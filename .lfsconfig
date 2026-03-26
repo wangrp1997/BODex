@@ -1,2 +1,2 @@
 [lfs]
-url = "https://huggingface.co/datasets/JiayiChenPKU/BODex_lfs/info/lfs"
+    url = "https://huggingface.co/datasets/JiayiChenPKU/BODex_lfs.git/info/lfs"
