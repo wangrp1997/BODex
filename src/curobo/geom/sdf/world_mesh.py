@@ -11,6 +11,7 @@
 """World represented as Meshes can be used with this module for collision checking."""
 
 # Standard Library
+import os
 from dataclasses import dataclass
 from typing import List, Optional, Union, Dict
 
@@ -21,8 +22,12 @@ import warp as wp
 import trimesh 
 
 # CuRobo
-from coal_openmp_wrapper import loadConvexMeshCpp
-from curobo.geom.sdf.gjk_coal import getBoundingPrimitive, ContactPDNConvexMesh, RobotSelfPenetration
+
+DISABLE_GRASP_SYN = os.getenv("DISABLE_GRASP_SYN", "false").lower() in ("true", "1", "yes")
+
+if not DISABLE_GRASP_SYN:
+    from coal_openmp_wrapper import loadConvexMeshCpp
+    from curobo.geom.sdf.gjk_coal import getBoundingPrimitive, ContactPDNConvexMesh, RobotSelfPenetration
 from curobo.cuda_robot_model.urdf_kinematics_parser import UrdfKinematicsParser
 from curobo.geom.sdf.warp_primitives import SdfMeshWarpPy, SweptSdfMeshWarpPy, ContactPDNMeshWarpPy
 from curobo.geom.sdf.world import (

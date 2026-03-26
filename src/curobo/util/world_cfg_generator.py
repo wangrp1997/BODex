@@ -112,7 +112,7 @@ class DexonomyConfigDataset(Dataset):
 
         scene_cfg = load_scene_cfg(join_path(get_assets_path(), f"../{cfg['scene_path']}"))
 
-        if cfg["hand_type"] == "real_shadow":
+        if cfg["hand_name"] == "real_shadow":
             v = cfg["pregrasp_qpos"]
             # Change qpos order of thumb
             cfg["pregrasp_qpos_urdf"] = np.concatenate([v[:, :7], v[:, -5:], v[:, 7:-5]], axis=-1)
@@ -126,7 +126,7 @@ class DexonomyConfigDataset(Dataset):
 
         cfg["world_cfg"] = scenecfg2worldcfg(scene_cfg)
         cfg["save_prefix"] = (
-            full_path.split("succgrasp/")[-1].split("graspdata/")[-1].split("grasp.npy")[0]
+            full_path.split("succ_grasp/")[-1].split("grasp_data/")[-1].split("grasp.npy")[0]
         )
         return cfg
 

@@ -1,6 +1,6 @@
 world:
   type: dexonomy
-  template_path: /mnt/disk1/jiayichen/code/Dexonomy/output/debug_real_shadow/graspdata/**/*_grasp.npy
+  template_path: /mnt/disk1/jiayichen/code/Dexonomy/output/debug_real_shadow/grasp_data/**/*_grasp.npy
   start: 
   end: 
 

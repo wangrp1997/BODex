@@ -15,29 +15,17 @@ import multiprocessing
 import datetime
 
 
-def worker(gpu_id, task, manip_path, save_folder, output_path, save_mode, parallel_world):
+def worker(gpu_id, task, manip_path, save_folder, output_path, save_mode, parallel_world, skip):
     with open(output_path, "a") as output_file:
         if task == "grasp":
-            subprocess.call(
-                f"CUDA_VISIBLE_DEVICES={gpu_id} python example_grasp/plan_batch_env.py -c {manip_path} -f {save_folder} -m {save_mode} -w {parallel_world}",
-                shell=True,
-                stdout=output_file,
-                stderr=output_file,
-            )
+            cmd = f"CUDA_VISIBLE_DEVICES={gpu_id} python example_grasp/plan_batch_env.py -c {manip_path} -f {save_folder} -m {save_mode} -w {parallel_world}"
         elif task == "mogen_dexonomy":
-            subprocess.call(
-                f"CUDA_VISIBLE_DEVICES={gpu_id} python example_grasp/plan_mogen_dexonomy.py -c {manip_path} -f {save_folder} -m {save_mode}",
-                shell=True,
-                stdout=output_file,
-                stderr=output_file,
-            )
+            cmd = f"CUDA_VISIBLE_DEVICES={gpu_id} python example_grasp/plan_mogen_dexonomy.py -c {manip_path} -f {save_folder} -m {save_mode}"
         else:
-            subprocess.call(
-                f"CUDA_VISIBLE_DEVICES={gpu_id} python example_grasp/plan_mogen_batch.py -c {manip_path} -f {save_folder} -m {save_mode} -t {task}",
-                shell=True,
-                stdout=output_file,
-                stderr=output_file,
-            )
+            cmd = f"CUDA_VISIBLE_DEVICES={gpu_id} python example_grasp/plan_mogen_batch.py -c {manip_path} -f {save_folder} -m {save_mode} -t {task}"
+        if not skip:
+            cmd += " -k"
+        subprocess.call(cmd, shell=True, stdout=output_file, stderr=output_file)
 
 
 if __name__ == "__main__":
@@ -63,7 +51,7 @@ if __name__ == "__main__":
         "-e",
         "--exp_name",
         type=str,
-        default="debug",
+        default=None,
         help="folder to save. Overwrite the one in manip config.",
     )
 
@@ -89,12 +77,19 @@ if __name__ == "__main__":
         help="parallel world num (only used when task=grasp)",
     )
 
+    parser.add_argument(
+        "-k",
+        "--skip",
+        action="store_false",
+        help="If True, skip existing files. (default: True)",
+    )
+
     parser.add_argument("-g", "--gpu", nargs="+", required=True, help="gpu id list")
     args = parser.parse_args()
 
     manip_config_data = load_yaml(join_path(get_manip_configs_path(), args.manip_cfg_file))
-    manip_config_data["world"]["template_path"] = args.template_path
-    manip_config_data["exp_name"] = args.exp_name
+    if args.template_path is not None:
+        manip_config_data["world"]["template_path"] = args.template_path
 
     if (
         manip_config_data["world"]["start"] is not None
@@ -115,14 +110,25 @@ if __name__ == "__main__":
     assert obj_num_lst.sum() == all_obj_num
 
     p_list = []
+    if args.exp_name is not None:
+        manip_config_data["exp_name"] = args.exp_name
     if manip_config_data["exp_name"] is not None:
-        save_folder = os.path.join(args.manip_cfg_file[:-4], manip_config_data["exp_name"])
+        if not os.path.abspath(manip_config_data["exp_name"]):
+            save_folder = os.path.join(
+                args.manip_cfg_file[:-4], manip_config_data["exp_name"], "grasp_data"
+            )
+        else:
+            save_folder = manip_config_data["exp_name"]
     else:
         save_folder = os.path.join(
-            args.manip_cfg_file[:-4], datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+            args.manip_cfg_file[:-4],
+            datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"),
+            "grasp_data",
         )
 
-    runinfo_folder = os.path.join(get_output_path(), save_folder, "log/bodex_mogen")
+    runinfo_folder = os.path.join(
+        get_output_path(), os.path.dirname(save_folder), "log/bodex_mogen"
+    )
     os.makedirs(runinfo_folder, exist_ok=True)
 
     # create tmp manip cfg files
@@ -144,6 +150,7 @@ if __name__ == "__main__":
                 output_path,
                 args.save_mode,
                 args.parallel_world,
+                args.skip,
             ),
         )
         p.start()

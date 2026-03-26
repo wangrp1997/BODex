@@ -62,8 +62,8 @@ if __name__ == "__main__":
     setup_logger("warn")
 
     args = parser.parse_args()
-    if "graspdata" not in args.path:
-        args.path = os.path.join(args.path, "graspdata")
+    if "grasp_data" not in args.path:
+        args.path = os.path.join(args.path, "grasp_data")
 
     manip_config_data = load_yaml(join_path(get_manip_configs_path(), args.manip_cfg_file))
 

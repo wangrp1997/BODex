@@ -98,14 +98,16 @@ if __name__ == "__main__":
     manip_config_data = load_yaml(join_path(get_manip_configs_path(), args.manip_cfg_file))
 
     if args.save_folder is not None:
-        save_folder = os.path.join(args.save_folder, "mogen")
+        save_folder = args.save_folder
     elif manip_config_data["exp_name"] is not None:
-        save_folder = os.path.join(args.manip_cfg_file[:-4], manip_config_data["exp_name"], "mogen")
+        save_folder = os.path.join(
+            args.manip_cfg_file[:-4], manip_config_data["exp_name"], "traj_data"
+        )
     else:
         save_folder = os.path.join(
             args.manip_cfg_file[:-4],
             datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"),
-            "mogen",
+            "traj_data",
         )
 
     assert manip_config_data["world"]["type"] == "dexonomy"
@@ -209,7 +211,7 @@ if __name__ == "__main__":
         world_info_dict["world_model"] = world_model
         world_info_dict.pop("world_cfg")
         if "usd" not in args.save_mode:
-            if world_info_dict["hand_type"][0] == "real_shadow":
+            if world_info_dict["hand_name"][0] == "real_shadow":
                 world_info_dict["robot_pose"] = torch.cat(
                     [
                         world_info_dict["robot_pose"][:, :8],
