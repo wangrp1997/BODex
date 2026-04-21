@@ -92,7 +92,24 @@ On a single GPU, the grasp synthesis supports parallizing different objects, but
 python example_grasp/visualize_npy.py -c sim_shadow/fc.yml -p debug -m grasp
 ```
 
-6. **Evaluate grasp poses and filter out bad ones**: please see [DexGraspBench](https://github.com/JYChen18/DexGraspBench).
+6. **(Optional) Tune collision spheres for a custom hand**:
+Use the interactive tool below to visualize meshes and collision spheres, then iteratively adjust sphere centers/radii.
+```
+python tools/tune_collision_spheres.py \
+  --spheres src/curobo/content/configs/robot/spheres/right_botyard_hand.yml \
+  --mesh-root src/curobo/content/assets/robot/botyard_description/meshes \
+  --urdf src/curobo/content/assets/robot/botyard_description/botyard_rh.urdf \
+  --asset-root src/curobo/content/assets/robot/botyard_description
+```
+
+Common interactive commands in the tool:
+- `U`: visualize all links with FK (mesh + spheres)
+- `J`: visualize all links with FK (mesh only)
+- `v`: visualize currently selected link
+- `e/a/d`: edit / add / delete spheres
+- `s`: save changes to the YAML file
+
+7. **Evaluate grasp poses and filter out bad ones**: please see [DexGraspBench](https://github.com/JYChen18/DexGraspBench).
 
 
 ## License
