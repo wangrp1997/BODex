@@ -1,3 +1,10 @@
+## News (April 2026):
+
+We have open-sourced the follow-up work Dexonomy [RSS 2025] to [here](https://github.com/JYChen18/Dexonomy). For grasp generation, I highly recommend using Dexonomy — it offers easier customization and better grasp synthesis results.
+
+
+
+
 # BODex
 
 A GPU-based efficient pipeline for dexterous grasp synthesis built on [cuRobo](https://github.com/NVlabs/curobo/tree/main), proposed in *[ICRA 2025] BODex: Scalable and Efficient Robotic Dexterous Grasp Synthesis Using Bilevel Optimization*.
