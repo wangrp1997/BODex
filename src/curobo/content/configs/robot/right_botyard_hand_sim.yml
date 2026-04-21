@@ -1,0 +1,130 @@
+robot_cfg: # 机器人总配置根节点
+  robot_color: [0.863157, 0.0865002, 0.0802199, 1.0] # 可视化颜色 RGBA
+  kinematics: # 运动学/碰撞/关节空间相关配置
+    grad_group_names: [ # 优化时按手指分组的关节（用于梯度更新）
+      ['FAJ1', 'FAJ3'],
+      ['FFJ4', 'FFJ3', 'FFJ2', 'FFJ1'],
+      ['MFJ4', 'MFJ3', 'MFJ2', 'MFJ1'],
+      ['RFJ4', 'RFJ3', 'RFJ2', 'RFJ1'],
+      ['LFJ4', 'LFJ3', 'LFJ2', 'LFJ1'],
+      ['THJ4', 'THJ3', 'THJ2', 'THJ1']
+    ]
+    use_root_pose: True # 是否把手根位姿(平移+旋转)作为优化变量
+    hand_pose_transfer_path: "hand_pose_transfer/right_botyard_hand.yml" # 手姿态映射文件（后续改成botyard对应）
+    usd_path: "" # USD可视化模型路径（后续可替换）
+    usd_robot_root: "/robot" # USD里机器人根节点路径
+    isaac_usd_path: "" # Isaac Sim 专用USD路径（不用可留空）
+    usd_flip_joints: {} # USD关节方向翻转映射（键:关节名, 值:是否翻转）
+    usd_flip_joint_limits: [] # 需要翻转上下限的关节列表
+
+    urdf_path: "robot/botyard_description/botyard_rh.urdf" # URDF路径（这里后续要改成botyard_rh.urdf）
+    asset_root_path: "robot/botyard_description" # URDF中mesh的根目录（后续要改成botyard_description）
+    
+    base_link: "palm" # 运动学基坐标link
+    ee_link: "palm" # 末端link（纯手场景通常与base_link一致）
+    link_names: ["thdistal", "ffdistal", "mfdistal", "rfdistal", "lfdistal"] # 关注的关键接触link（通常是指尖）
+    lock_joints: null # 固定不动的关节列表（null表示不锁）
+    extra_links: null # 额外输出link（null表示不需要）
+
+    tendon_joints: [['FFJ2','FFJ1'], ['MFJ2','MFJ1'], ['RFJ2','RFJ1'], ['LFJ2','LFJ1']] # 腱耦合关节对（从动,主动）
+    collision_link_names: [
+        "palm",
+        "ffbase",
+        "ffproximal",
+        "ffmiddle",
+        "ffdistal",
+        "mfbase",
+        "mfproximal",
+        "mfmiddle",
+        "mfdistal",
+        "rfbase",
+        "rfproximal",
+        "rfmiddle",
+        "rfdistal",
+        "lfbase",
+        "lfproximal",
+        "lfmiddle",
+        "lfdistal",
+        "thbase",
+        "thproximal",
+        "thmiddle",
+        "thdistal",
+      ] # List[str] # 参与碰撞检测的link
+    collision_spheres: "spheres/right_botyard_hand.yml" # 碰撞球配置文件路径
+    collision_sphere_buffer: 0.00 # 给所有碰撞球统一增减半径的buffer
+    extra_collision_spheres: {} # 运行时附加碰撞球（如抓持物体）
+    self_collision_ignore: { # 自碰撞忽略表（key与value中的link对不做自碰撞约束）
+      'rh_palm' : ['rh_ffproximal', 'rh_mfproximal', 'rh_rfproximal', 'rh_lfmetacarpal', 'rh_thproximal'],
+      'rh_ffproximal' : ['rh_ffmiddle'],
+      'rh_ffmiddle' : ['rh_ffdistal'],
+      'rh_ffdistal' : [],
+      'rh_mfproximal' : ['rh_mfmiddle'],
+      'rh_mfmiddle' : ['rh_mfdistal'],
+      'rh_mfdistal' : [],
+      'rh_rfproximal' : ['rh_rfmiddle'],
+      'rh_rfmiddle' : ['rh_rfdistal'],
+      'rh_rfdistal' : [],
+      'rh_thproximal' : ['rh_thmiddle'],
+      'rh_thmiddle' : ['rh_thdistal'],
+      'rh_thdistal' : [],
+      'rh_lfmetacarpal' : ['rh_lfproximal'],
+      'rh_lfproximal': ['rh_lfmiddle'],
+      'rh_lfmiddle' : ['rh_lfdistal'],
+      'rh_lfdistal' : [],
+    } # 邻接/物理上允许接触的link对在这里忽略
+    self_collision_buffer: { # 各link的自碰撞安全余量（米）
+      'rh_palm' : 0,
+      'rh_ffproximal' : 0,
+      'rh_ffmiddle' : 0,
+      'rh_ffdistal' : 0.001,
+      'rh_mfproximal' : 0,
+      'rh_mfmiddle' : 0,
+      'rh_mfdistal' : 0.001,
+      'rh_rfproximal' : 0,
+      'rh_rfmiddle' : 0,
+      'rh_rfdistal' : 0.001,
+      'rh_thproximal' : 0,
+      'rh_thmiddle' : 0,
+      'rh_thdistal' : 0.001,
+      'rh_lfmetacarpal' : 0,
+      'rh_lfproximal': 0,
+      'rh_lfmiddle' : 0,
+      'rh_lfdistal' : 0.001,
+    } # Dict[str, float] # key是link名，value是该link的碰撞余量
+
+    use_global_cumul: True # 使用全局累计变换（一般保持True）
+    mesh_link_names: [
+        "rh_palm",
+        "rh_ffknuckle",
+        "rh_ffproximal",
+        "rh_ffmiddle",
+        "rh_ffdistal",
+        "rh_mfknuckle",
+        "rh_mfproximal",
+        "rh_mfmiddle",
+        "rh_mfdistal",
+        "rh_rfknuckle",
+        "rh_rfproximal",
+        "rh_rfmiddle",
+        "rh_rfdistal",
+        "rh_lfmetacarpal",
+        "rh_lfknuckle",
+        "rh_lfproximal",
+        "rh_lfmiddle",
+        "rh_lfdistal",
+        "rh_thproximal",        
+        "rh_thmiddle",        
+        "rh_thdistal",        
+      ] # List[str] # 需要加载mesh用于距离/可视化的link列表
+
+    cspace: # 配置空间（关节空间）优化参数
+      joint_names: ['rh_FFJ4', 'rh_FFJ3', 'rh_FFJ2', 'rh_FFJ1',
+                 'rh_MFJ4','rh_MFJ3', 'rh_MFJ2', 'rh_MFJ1',
+                 'rh_RFJ4','rh_RFJ3', 'rh_RFJ2', 'rh_RFJ1',
+                 'rh_LFJ5','rh_LFJ4', 'rh_LFJ3', 'rh_LFJ2', 'rh_LFJ1',
+                 'rh_THJ5', 'rh_THJ4', 'rh_THJ3', 'rh_THJ2','rh_THJ1',] # List[str]
+      retract_config: [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,0, 0,0,0,0,0] # 收拢/默认姿态
+      null_space_weight: [1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1,1, 1,1,1,1,1] # 零空间正则权重（每关节）
+      cspace_distance_weight: [1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1,1, 1,1,1,1,1] # 关节距离度量权重
+      max_jerk: 500.0 # 关节jerk上限
+      max_acceleration: 15.0 # 关节加速度上限
