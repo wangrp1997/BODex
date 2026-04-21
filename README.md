@@ -47,6 +47,7 @@ pip uninstall numpy
 pip install numpy==1.26.4
 
 cd src/curobo/geom/cpp
+conda install -y -c conda-forge "eigen=3.3.9" "coal=3.0.1"
 python setup.py install    # install coal_openmp_wrapper
 ```
 
