@@ -1,0 +1,58 @@
+world: # 场景数据来源配置
+  type: scene_cfg # 场景类型：从预生成的 scene_cfg 文件读取
+  template_path: object/DGN_2k/scene_cfg/**/floating/*.npy # 场景文件匹配路径（浮空抓取）
+  start: 0 # 从第几个场景开始
+  end: 100 # 到第几个场景结束（不一定包含 end 本身）
+
+
+robot_file: "right_botyard_hand_sim.yml" # 纯手机器人配置文件（当前 Botyard 主入口）
+robot_file_with_arm: null # 纯手流程不加载带臂IK配置，避免与Shadow带臂模型混用
+base_cfg_file: "base_grasp.yml" # 抓取任务基础参数（可复用）
+particle_file: "particle_grasp_debug.yml" # 粒子/采样相关参数（可复用）
+gradient_file: "gradient_grasp_fc.yml" # 梯度优化参数（力闭合任务，可复用）
+
+exp_name: 'debug' # 输出目录实验名
+seed_num: 20 # 每个物体的随机种子数量
+seeder_cfg: # 初始种子生成配置
+  obj_sample: # 物体表面采样参数
+    num: 128 # 每次采样点数
+    inflate: 0.1 # 采样外扩距离（米）
+    convex_hull: True # 是否基于凸包采样
+    collision_free: True  # 初始采样是否要求无碰撞
+  ik_init_q: # IK 初值（留空表示使用默认策略）
+  load_path:  # 从已有结果加载种子路径（留空=不加载）
+  skip_transfer: False # 是否跳过手姿态迁移
+  t:  # 手根平移偏置（留空=默认）
+  r:  # 手根旋转偏置（留空=默认）
+  q: [0.0, 0.9, 0.3, 0.0, 0.9, 0.3, 0.0, 0.9, 0.3, 0.0, 0.9, 0.3, 0.0, 0.2, 0.6, 0.2] # 初始关节角（按 Botyard 16 可控关节顺序）
+  jitter_angle: [[-180, -15, -15], [180, 15, 15]] # 姿态角度扰动范围（度）
+  jitter_dist: [[0.0, -0.03, -0.03], [0.03, 0.03, 0.03]] # 位置扰动范围（米）
+
+grasp_contact_strategy: # 接触点与接触优化策略
+  contact_points_name: ['ffdistal/2', 'mfdistal/2', 'rfdistal/2', 'lfdistal/2', 'thdistal/1'] # 使用的接触点名称（Botyard 指尖）
+  opt_progress: [0.0, 0.6, 0.8] # 不同优化阶段切换进度
+  distance: [0.01, 0.01, 0.0] # 各阶段目标接触距离（米）
+  contact_query_mode: [-1, 0, 0] # 各阶段接触查询模式
+  save_qpos: [False, True] # 是否保存中间/最终关节状态
+  max_ge_stage: 0 # 几何能量最大阶段索引
+
+grasp_cfg: # 抓取优化核心参数
+  task_dict: # 任务目标方向与参考
+    f: [0, 0, 1] # 期望受力方向
+    p: [0, 0, 0] # 参考位置
+    t: [0, 0, 0] # 参考姿态参数
+    gamma: 180 # 力闭合相关角度阈值（度）
+  ge_param: # 几何/力学求解参数
+    type: 'qp' # 求解器类型：二次规划
+    miu_coef: [0.1, 0] # 摩擦系数等参数（分阶段）
+    solver_type: 'batch_reluqp' # 批量求解器实现
+    k_lower: 0.2 # 接触稳定性下界
+    pressure_constraints:   # [contact_id_list, lower] 各接触组最小压力约束
+      [[[0, 1, 2, 3, 4], 1.0],
+        [[0, 1, 2], 0.4],
+        [[4], 0.5],
+      ]
+    enable_density: False # 是否启用密度项
+    solve_interval: 5 # 每隔多少步求解一次 GE
+
+mogen_init: [0.4227, -1.5991, -1.8872, -3.0432, -0.9848,  3.2433,  0.1738, -0.2078, 0,0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,0] # 动作规划初始状态（主要用于带臂流程）

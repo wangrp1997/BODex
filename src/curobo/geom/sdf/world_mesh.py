@@ -211,7 +211,7 @@ class WorldMeshCollision(WorldPrimitiveCollision):
             self._contact_robot_sphere_param.append(sphere_param)
             self._contact_robot_offset_pose.append(rm.pose)
         self._contact_robot_offset_pose = self.tensor_args.to_device(np.stack(self._contact_robot_offset_pose))
-        self._contact_robot_sphere_param = self.tensor_args.to_device(np.stack(self._contact_robot_sphere_param))
+        self._contact_robot_sphere_param = self.tensor_args.to_device(torch.stack(self._contact_robot_sphere_param))
         return
     
     def load_contact_robot_pc(self, robot_meshes: List[Mesh]):

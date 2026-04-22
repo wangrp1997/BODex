@@ -32,7 +32,10 @@ class TensorDeviceType:
         if isinstance(data_tensor, torch.Tensor):
             return data_tensor.to(device=self.device, dtype=self.dtype)
         else:
-            return torch.as_tensor(np.array(data_tensor), device=self.device, dtype=self.dtype)
+            arr = np.array(data_tensor)
+            if isinstance(arr, np.ndarray) and arr.shape == ():
+                arr = arr.item()
+            return torch.as_tensor(arr, device=self.device, dtype=self.dtype)
 
     def to_int8_device(self, data_tensor):
         return data_tensor.to(device=self.device, dtype=torch.int8)

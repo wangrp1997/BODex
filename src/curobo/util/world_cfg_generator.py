@@ -60,9 +60,15 @@ class GraspConfigDataset(Dataset):
     def __getitem__(self, index):
         full_path = self.grasp_path_lst[index]
         cfg = np.load(full_path, allow_pickle=True).item()
-        scene_cfg = load_scene_cfg(cfg["scene_path"][0])
+        scene_path = cfg.get("scene_path")
+        if isinstance(scene_path, (list, tuple, np.ndarray)):
+            scene_path = scene_path[0]
+        scene_cfg = load_scene_cfg(scene_path)
         for k, v in cfg.items():
-            cfg[k] = v[0]
+            if isinstance(v, (list, tuple, np.ndarray)):
+                cfg[k] = v[0]
+            else:
+                cfg[k] = v
         cfg["save_prefix"] = scene_cfg["scene_id"] + "_"
         return cfg
 
